@@ -281,6 +281,8 @@ else{
 							<tbody><?php
 								//Add character count functionalirty here
 								$display_character = (int) apply_filters('vsz_display_character_count',30);
+								$arr_field_type_info = vsz_field_type_info($fid);
+								
 								//Get all fields related information
 								foreach ($data_sorted as $k => $v) {
 									$k = (int)$k;
@@ -297,8 +299,15 @@ else{
 										if (!filter_var($_value, FILTER_VALIDATE_URL) === false) {
 											$_value = esc_url($_value);
 											//If value is url then setup anchor tag with value
-											$_value = sprintf('<a href="%s" target="_blank">%s</a>', $_value, basename($_value));
-											echo '<td data-head="'.vsz_cf7_admin_get_field_name($v2).'">'.$_value.'</td>';
+											if(!empty($arr_field_type_info) && array_key_exists($k2,$arr_field_type_info) && $arr_field_type_info[$k2] == 'file'){
+												//Add download attributes in tag if field type is attachement
+												$_value = sprintf('<a href="%s" target="_blank" download >%s</a>', $_value, basename($_value));
+												echo '<td data-head="'.vsz_cf7_admin_get_field_name($v2).'">'.$_value.'</td>';
+											}
+											else{
+												$_value = sprintf('<a href="%s" target="_blank" >%s</a>', $_value, basename($_value));
+												echo '<td data-head="'.vsz_cf7_admin_get_field_name($v2).'">'.$_value.'</td>';
+											}
 										}
 										else{
 											$_value = esc_html($_value);

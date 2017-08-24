@@ -373,6 +373,7 @@ class Advanced_Cf7_Db_Admin {
 		$obj_form = vsz_cf7_get_the_form_list($form_id);
 		//get pre define fields information
 		$arr_form_tag = $obj_form[0]->scan_form_tags();
+		
 		$arr_field_type = array();
 		//Define option field type array
 		$arr_option_type = array('checkbox','radio','select');
@@ -697,6 +698,7 @@ class Advanced_Cf7_Db_Admin {
 	
 	//Edit form AJAX call hadle By this function 
 	public function vsz_cf7_edit_form_ajax(){
+		if(!current_user_can( 'manage_options' )) return;
 		global $wpdb;
 		//Check entry id set or not in current request
 		$rid = ((isset($_POST['rid']) && !empty($_POST['rid'])) ? intval($_POST['rid']) : '');
@@ -740,8 +742,8 @@ function vsz_cf7_export_to_csv($fid, $ids_export = ''){
 	$data_sorted = wp_unslash(vsz_cf7_sortdata($data));
 	
 	//Generate CSV file 
-	header("Content-type: text/x-csv");
-    header("Content-Disposition: attachment; filename=$form_title.csv");
+	header('Content-Type: text/csv; charset=UTF-8');
+	header('Content-Disposition: attachment;filename="'.$form_title.'.csv";');
     $fp = fopen('php://output', 'w');
     fputs($fp, "\xEF\xBB\xBF");
     fputcsv($fp, array_values(array_map('sanitize_text_field',$fields)));

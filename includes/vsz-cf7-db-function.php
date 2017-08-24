@@ -324,3 +324,26 @@ function vsz_cf7_import_date_format_callback(){
 					);
 	return $arr_dates;
 }
+
+//Get field name related type information 
+function vsz_field_type_info($fid){
+	
+	if(empty($fid) || !intval($fid)) return ;
+	
+	$fid = intval($fid);
+	$obj_form = vsz_cf7_get_the_form_list($fid);
+	//get pre define fields information
+	$arr_form_tag = $obj_form[0]->scan_form_tags();
+	$arr_field_type = array();
+	if(!empty($arr_form_tag)){
+		//Get all fields related information
+		foreach($arr_form_tag as $key => $arr_type){
+			//Check if tag type is submit then ignore tag info
+			if($arr_type['basetype'] == 'submit') continue;
+			//get field type information
+			$arr_field_type[$arr_type['name']] = $arr_type['basetype'];
+		}
+	}
+	
+	return $arr_field_type;
+}
