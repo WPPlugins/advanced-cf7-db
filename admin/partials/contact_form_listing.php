@@ -49,7 +49,7 @@ else{
 	global $wpdb;
 	$sql = sprintf("SELECT `cf7_id` FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` GROUP BY `cf7_id`" );
 	$data = $wpdb->get_results($sql,ARRAY_N);
-	$arr_form_id = '';
+	$arr_form_id = array();
 	if(!empty($data)){
 		foreach($data as $arrVal){
 			$arr_form_id[] = (int)$arrVal[0];

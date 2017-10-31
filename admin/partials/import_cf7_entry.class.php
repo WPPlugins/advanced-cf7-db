@@ -31,6 +31,7 @@ if(!isset($_POST['form_match_key']) || empty($_POST['form_match_key']) || !isset
 
 $error_data = array();
 $new_csv = array();
+$error_csv  = array();
 $header = '';
 
 $fid = '';

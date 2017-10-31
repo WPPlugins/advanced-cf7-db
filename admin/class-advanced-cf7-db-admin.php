@@ -593,7 +593,7 @@ class Advanced_Cf7_Db_Admin {
 			//Define option field type array
 			$arr_option_type = array('checkbox','radio','select');
 			//Get non editable fields information
-			$not_editable_field = apply_filters('vsz_cf7_not_editable_fields');
+			$not_editable_field = apply_filters('vsz_cf7_not_editable_fields',array());
 			//Get entry related fields information
 			$arr_exist_keys = get_entry_related_fields_info($fid,$rid);
 			
