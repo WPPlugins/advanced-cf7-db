@@ -311,7 +311,12 @@ else{
 										}
 										else{
 											$_value = esc_html($_value);
-											echo '<td data-head="'.vsz_cf7_admin_get_field_name($v2).'">'.mb_strimwidth($_value, 0, $display_character, "...").'</td>';
+											//var_dump(($_value)); var_dump(strlen($_value)); exit;
+											if(strlen($_value) > $display_character){
+												echo '<td data-head="'.vsz_cf7_admin_get_field_name($v2).'">'.substr($_value, 0, $display_character).'...</td>';
+											}else{
+												echo '<td data-head="'.vsz_cf7_admin_get_field_name($v2).'">'.$_value.'</td>';
+											}	
 										}
 									}//Close foreach
 									echo '</tr>';
