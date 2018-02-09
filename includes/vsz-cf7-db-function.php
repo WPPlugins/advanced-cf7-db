@@ -308,7 +308,27 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		$loading = __('Loading...');
 		$disable = 'readonly';
 		echo sprintf("<li><span class=\"label\">%s</span> <input class=\"field-%s\" type=\"text\" name=\"field[%s]\" value=\"%s\" %s /></li>", $label, $k, $k, $loading, $disable);
+	}else if($type == 'tel'){
+
+		if(is_array($v)){
+			$label = esc_html($v['label']);
+		}
+		else{
+			$label = esc_html($v);
+		}
+		$loading = __('Loading...');
+		echo sprintf("<li><span class=\"label\">%s</span> <input class=\"field-%s\" type=\"text\" name=\"field[%s]\" value=\"%s\" /></li>", $label, $k, $k, $loading);
+	}else if($type == 'url' || $type == 'number' || $type == 'date' || $type == 'acceptance' || $type == 'quiz'){
+		if(is_array($v)){
+			$label = esc_html($v['label']);
+		}
+		else{
+			$label = esc_html($v);
+		}
+		$loading = __('Loading...');
+		echo sprintf("<li><span class=\"label\">%s</span> <input class=\"field-%s\" type=\"text\" name=\"field[%s]\" value=\"%s\" /></li>", $label, $k, $k, $loading);
 	}
+
 }
 
 //Define sheet related date formates

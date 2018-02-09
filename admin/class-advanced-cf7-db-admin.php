@@ -106,6 +106,7 @@ class Advanced_Cf7_Db_Admin {
 	////////////// to add admin screens for Contact form Db and Import CSV
 	function vsz_cf7_plugin_menu(){
 		///// Menu pages for contact form DB
+
 		add_menu_page( "Advanced CF7 DB", "Advanced CF7 DB", "edit_others_pages", "contact-form-listing", array($this,"vsz_contact_form_callback"), 'dashicons-visibility' , 45);
 		///// Menu pages for Import CSV
 		add_submenu_page( 'contact-form-listing', __('Import CSV', 'advanced-cf7-db'), __('Import CSV', ' advanced-cf7-db'), 'manage_options', 'import_cf7_csv',array($this,'vsz_import_cf7_csv') ); 
@@ -282,10 +283,18 @@ class Advanced_Cf7_Db_Admin {
             	<div class="popup-note"><span>You can rename the Field title, Hide field and change the position of fields using Drag and Drop from here.</span></div>
 				<input type="hidden" name="fid" value="<?php echo $fid; ?>" />
 				<input type="hidden" name="vsz_cf7_setting_nonce"  value="<?php echo $nonce; ?>" />
-				<ul id="cf7d-list-field"><?php
+				<ul id="cf7d-list-field">
+					
+					<?php
 					//Get form id related fields settings value from option table
 					$field_settings = get_option('vsz_cf7_settings_field_' . $fid, array());
-					
+					$show_record = '';
+					$show_record = get_option('vsz_cf7_settings_show_record_' . $fid, array());
+					if(empty($show_record)){
+						$show_record = 10;
+					}?>
+					<li class="ui-state-disabled"><span class="label">Show record</span> <input class="" type="text" name="cf7_show_record" value="<?php echo $show_record;?>"></li>
+					<?php
 					//Check fields setting define or not
 					if($field_settings == ""){
 						$field_settings = array();
@@ -349,7 +358,9 @@ class Advanced_Cf7_Db_Admin {
 						}//Close if for check remaining fields 
 					}//Close else
 					?>
+					
 				</ul>
+				
 				<div id="cf7d-modal-footer">
 					<input type="submit" name="vsz_save_field_settings" value="Save Changes" class="button button-primary button-large" />
 				</div>
@@ -358,7 +369,8 @@ class Advanced_Cf7_Db_Admin {
 				jQuery(document).ready(function($) {
 					//For using drag and drop js 
 					jQuery('#cf7d-list-field').sortable({
-						placeholder: "sortable-placeholder"
+						placeholder: "sortable-placeholder",
+						items: "li:not(.ui-state-disabled)"
 					}); 
 				}); 
 			</script>
@@ -551,10 +563,11 @@ class Advanced_Cf7_Db_Admin {
 					$arr_fields[$key]['show'] = intval($arrVal['show']);
 				}
 			}
-			
+			$show_record = (int)($_POST['cf7_show_record']);
 			//Save Settings POPUP information in option table
 			add_option('vsz_cf7_settings_field_' . $fid, $arr_fields, '', 'no');
 			update_option('vsz_cf7_settings_field_' . $fid, $arr_fields);
+			update_option('vsz_cf7_settings_show_record_' . $fid, $show_record);
 		}//close if for save setting information
 		
 		//Save form information here

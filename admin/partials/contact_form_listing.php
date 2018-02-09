@@ -104,7 +104,12 @@ else{
 		$search_date_query = '';
 		
 		//Get post per page value from general setting screen
-		$posts_per_page = get_option('posts_per_page');
+		$show_record = '';
+		$show_record = get_option('vsz_cf7_settings_show_record_' . $fid, array());
+		if(empty($show_record)){
+			$show_record = 10;
+		}
+		$posts_per_page = $show_record;
 		//Add post per page filter here , Any user call this filter and customize post per page count
 		$items_per_page = (int)apply_filters('vsz_cf7_entry_per_page', (!empty($posts_per_page) ? $posts_per_page : 10));
 		//Get current page information from  query
@@ -336,7 +341,7 @@ else{
 					</div>
 				</div>
 				
-				<input type="hidden" name="cpage" value="" id="cpage">		
+				<input type="hidden" name="cpage" value="<?php echo $page;?>" id="cpage">		
 				<input type="hidden" name="totalPage" value="<?php print ceil($total / $items_per_page);?>" id="totalPage">		
 			</form>
 			<script>
@@ -359,6 +364,12 @@ else{
 				//Add custom class in body tag when click on Setting button
 				jQuery('#cf7d_setting_form').click(function(){
 					jQuery('body').addClass('our-body-class');
+				});
+				//Updating record 
+				jQuery(document).on('click','#update_cf7_value',function(){
+					var filterdata = jQuery('.vsz-cf7-listing').html();
+					jQuery('.cf7d-modal-form').append('<div style="display:none">'+filterdata+'</div>');
+
 				});
 				
 			</script>

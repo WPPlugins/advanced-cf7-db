@@ -2,8 +2,8 @@
 Contributors: vsourz1td
 Tags: contact form 7 db, advanced cf7 db, contact form 7 database, contact form db,  contact form 7, database, cf7db, save-contact-form, Save-Forms-Data, import-cf7, export-contact-data, view-cf7-entry
 Requires at least: 3.5
-Tested up to: 4.9.1
-Stable tag: 1.2.0
+Tested up to: 4.9.4
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -91,6 +91,13 @@ If you think, that you found a bug in our plugin or have any question contact us
 
 
 == Changelog ==
+
+= 1.3.0 =
+* Fixed issue related to the Contact Form tel field while editing the form data entry.
+* Provision to change the number of records to be displayed in listing page from display setting option.
+* Fixed issue related to redirection to the first page when a record is been updated from edit data popup.
+* Compatible up to PHP 7.1
+
 = 1.2.0 =
 * Fix error related to PHP strings.
 

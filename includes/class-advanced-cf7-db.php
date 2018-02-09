@@ -161,7 +161,7 @@ class Advanced_Cf7_Db {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		
 		// Adding custom screen
-		$this->loader->add_action('admin_menu', $plugin_admin, 'vsz_cf7_plugin_menu');
+		$this->loader->add_action('admin_menu', $plugin_admin, 'vsz_cf7_plugin_menu',9);
 		
 		//Get form related fields information 
 		$this->loader->add_filter('vsz_cf7_admin_fields', $plugin_admin,'vsz_cf7_admin_fields_callback', 10, 2);
