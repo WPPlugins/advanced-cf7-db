@@ -111,6 +111,9 @@ if(isset($_POST['submit']) && isset($_FILES['importFormList']) && !empty($_FILES
 							$field_key = (int)array_search($mKey,$arr_sheet_column);
 							$arr_field_name[$fKey] = $field_key;
 						}
+						else{
+							
+						}
 					}
 					
 					//Check any field key match or not

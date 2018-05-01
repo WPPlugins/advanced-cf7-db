@@ -21,7 +21,7 @@
  * @author     vsourz Digital <mehul@vsourz.com>
  */
 class Advanced_Cf7_Db_Admin {
-
+	
 	/**
 	 * The ID of this plugin.
 	 *
@@ -106,18 +106,64 @@ class Advanced_Cf7_Db_Admin {
 	////////////// to add admin screens for Contact form Db and Import CSV
 	function vsz_cf7_plugin_menu(){
 		///// Menu pages for contact form DB
-
-		add_menu_page( "Advanced CF7 DB", "Advanced CF7 DB", "edit_others_pages", "contact-form-listing", array($this,"vsz_contact_form_callback"), 'dashicons-visibility' , 45);
+		
+			
+		$cap = 'no_access';
+		// Check if user have access than display
+		
+		$user_id = get_current_user_id();
+		$subject = new WP_User($user_id);
+		$allcaps= $subject->allcaps;
+		$caps = $subject->caps;
+        
+		$caps    = array_merge(wp_get_current_user()->caps, $caps);
+		$allcaps = array_merge(wp_get_current_user()->allcaps, $allcaps);    
+		if (wp_get_current_user()->ID == $subject->ID) {
+			wp_get_current_user()->allcaps = $allcaps;
+			wp_get_current_user()->caps    = $caps;
+		}
+		$user = wp_get_current_user();
+		
+		//$role = get_role('subscriber');
+		//var_dump($user);exit;
+		if(isset($user) && !empty($user)){
+			foreach($user->allcaps as $key=>$capability){
+				if($capability == true){
+					if(strpos($key, 'cf7_db_form_edit_') !== false){
+						$cap = 'exist';
+					
+						break;
+					}
+				}	
+			}
+		}
+		
+		if($cap == 'no_access'){
+			if(isset($user) && !empty($user)){
+				foreach($user->allcaps as $key=>$capability){
+					if($capability == true){
+						if(strpos($key, 'cf7_db_form_view') !== false){
+							
+							$cap = 'exist';
+							break;
+						}
+					}	
+				}
+			}
+		}
+		
+		add_menu_page( "Advanced CF7 DB", "Advanced CF7 DB", $cap, "contact-form-listing", array($this,"vsz_contact_form_callback"), 'dashicons-visibility' , 45);
 		///// Menu pages for Import CSV
-		add_submenu_page( 'contact-form-listing', __('Import CSV', 'advanced-cf7-db'), __('Import CSV', ' advanced-cf7-db'), 'manage_options', 'import_cf7_csv',array($this,'vsz_import_cf7_csv') ); 
+		add_submenu_page( 'contact-form-listing', __('Import CSV', 'advanced-cf7-db'), __('Import CSV', ' advanced-cf7-db'), $cap, 'import_cf7_csv',array($this,'vsz_import_cf7_csv') ); 
 	}
 	
 	// Callback function for listing screen
 	function vsz_contact_form_callback(){
 		//Check current user permission
-		if (!current_user_can('manage_options'))  {
+
+/* 		if (!current_user_can('manage_options'))  {
 			wp_die( __('You do not have sufficient permissions to access this page.') );
-		}
+		} */
 		wp_enqueue_style('vsz-cf7-db-admin-css');
 		//Define all entry related design in this file
 		require_once plugin_dir_path( __FILE__ ) . 'partials/contact_form_listing.php';
@@ -126,16 +172,15 @@ class Advanced_Cf7_Db_Admin {
 	// Callback function for Import CSV screen
 	function vsz_import_cf7_csv(){
 		//Check current user permission
-		if (!current_user_can('manage_options'))  {
+		/* if (!current_user_can('manage_options'))  {
 			wp_die( __('You do not have sufficient permissions to access this page.') );
-		}
+		} */
 		//Define import CSV screen design in this file
 		require_once plugin_dir_path( __FILE__ ) . 'partials/import_cf7_csv.php';
 	}
 	
 	//Get form related all fields information here
 	function vsz_cf7_admin_fields_callback($fields, $fid){
-		
 		$return = array();
 		$fid = (int)$fid;
 		//Get current form related field setting value from option table
@@ -216,8 +261,10 @@ class Advanced_Cf7_Db_Admin {
 		<select id="vsz-cf7-export" name="vsz-cf7-export" data-fid="<?php echo $fid; ?>">
 			<option value="-1"><?php _e('Export to...'); ?></option>
 			<option value="csv"><?php _e('CSV'); ?></option>
+			<option value="excel"><?php _e('Excel'); ?></option>
+			<option value="pdf"><?php _e('PDF'); ?></option>
 		</select>
-		<button class="button action" type="submit" name="btn_export"><?php _e('Export'); ?></button><?php
+		<button class="button action" title="<?php _e('Export'); ?>" type="submit" name="btn_export"><?php _e('Export'); ?></button><?php
 	}//Close export option function 
 	
 	//Display Search text box design structure here
@@ -230,7 +277,7 @@ class Advanced_Cf7_Db_Admin {
 			$url .= '&cf7_id='.$fid;
 		}
 		?><input value="<?php echo ((isset($_POST['search_cf7_value'])) && !empty($_POST['search_cf7_value']) ? sanitize_text_field($_POST['search_cf7_value']) : ''); ?>" type="text" class="" id="cf7d-search-q" name="search_cf7_value" placeholder="<?php echo _e('Type something...'); ?>" id="" />
-		<button data-url="<?php echo esc_url($url); ?>" class="button" type="button" id="cf7d-search-btn"><?php _e('Search'); ?></button>
+		<button data-url="<?php echo esc_url($url); ?>" class="button" type="button" id="cf7d-search-btn" title="<?php _e('Search'); ?>" ><?php _e('Search'); ?></button>
 		<?php
 	}//Close search box design function
 	
@@ -248,7 +295,7 @@ class Advanced_Cf7_Db_Admin {
 		?><div class="span12">
 			<div class="display-setup">
 				<span>To change the Field title, Hide field and change the position of fields using Drag and Drop from here.</span>
-				<a href="#TB_inline?width=600&height=550&inlineId=cf7d-modal-setting" id="cf7d_setting_form" class="thickbox page-title-action" name="Display Settings"><?php _e('Display Settings'); ?></a>
+				<a title="<?php _e('Display Settings'); ?>" href="#TB_inline?width=600&height=550&inlineId=cf7d-modal-setting" id="cf7d_setting_form" class="thickbox page-title-action" name="Display Settings"><?php _e('Display Settings'); ?></a>
 			</div>
 		</div><?php
 	}
@@ -260,7 +307,7 @@ class Advanced_Cf7_Db_Admin {
 		$row_id = (int)$row_id;
 		?><td>
 			<a data-rid="<?php echo $row_id; ?>" href="#TB_inline?width=600&height=550&inlineId=cf7d-modal-edit-value" id="cf7d-edit-form" class="thickbox cf7d-edit-value" name="Edit Information">
-				<i class="fa fa-pencil-square-o" aria-hidden="true" style="font-size:20px;"></i>
+				<i class="fa fa-pencil-square-o" title="Edit" aria-hidden="true" style="font-size:20px;"></i>
 			</a>
 		</td><?php
 	}
@@ -428,13 +475,16 @@ class Advanced_Cf7_Db_Admin {
 					//Get form id related header settings value
 					$field_settings = get_option('vsz_cf7_settings_field_' . $form_id, array());
 					
+				
 					if(count($field_settings) == 0) { //no settings found
+					
 						foreach ($fields as $k => $v) {
 							
 							//Display field type related fields here
-							if($arr_field_type[$k]['basetype'] != 'text' && $arr_field_type[$k]['basetype'] != 'email'){
+							if(isset($arr_field_type[$k]) && $arr_field_type[$k]['basetype'] != 'text' && $arr_field_type[$k]['basetype'] != 'email'){
 								//Call function for display design structure
 								vsz_display_field_type_value($arr_field_type[$k]['basetype'],$arr_field_type,$k,$v);
+								
 							}
 							else{
 								//Define all text field here
@@ -447,7 +497,7 @@ class Advanced_Cf7_Db_Admin {
 								$k = esc_html($k);
 								$loading = __('Loading...');
 								//Display Text box design here
-								echo sprintf("<li><span class=\"label\">%s</span> <input class=\"field-%s\" type=\"text\" name=\"field[%s]\" value=\"%s\" %s /></li>", $label, $k, $k, $loading, $disable);
+								echo sprintf("<li class=\"clearfix\"><span class=\"label\">%s</span> <input class=\"field-%s\" type=\"text\" name=\"field[%s]\" value=\"%s\" %s /><div class=\"clear\"></div></li>", $label, $k, $k, $loading, $disable);
 							}//Close else
 						}//Close foreach
 					}//Close if for  check fields settings
@@ -613,6 +663,7 @@ class Advanced_Cf7_Db_Admin {
 			if(isset($_POST['field']) && !empty($_POST['field'])){
 				//Fetch all fields information here
 				foreach ($_POST['field'] as $key => $value){
+					$value = sanitize_textarea_field(htmlspecialchars($value));
 					
 					$key = sanitize_text_field($key);
 					//Escape loop if key have not editable field
@@ -699,6 +750,12 @@ class Advanced_Cf7_Db_Admin {
 				case 'csv':
 					vsz_cf7_export_to_csv($fid, $ids_export);
 					break;
+				case 'excel':
+					vsz_cf7_export_to_excel($fid, $ids_export);
+					break;
+				case 'pdf':
+					vsz_cf7_export_to_pdf($fid, $ids_export);
+					break;			
 				case '-1':
 					return;
 					break;
@@ -711,7 +768,8 @@ class Advanced_Cf7_Db_Admin {
 	
 	//Edit form AJAX call hadle By this function 
 	public function vsz_cf7_edit_form_ajax(){
-		if(!current_user_can( 'manage_options' )) return;
+		//global $cap; 
+		//if(!current_user_can( $cap )) return;
 		global $wpdb;
 		//Check entry id set or not in current request
 		$rid = ((isset($_POST['rid']) && !empty($_POST['rid'])) ? intval($_POST['rid']) : '');
@@ -736,6 +794,116 @@ class Advanced_Cf7_Db_Admin {
 		return $cf7_not_editable_fields;
 	}
 	
+	// Create table when new site added
+	public function vsz_cf7_add_new_table_for_sites($blog_id){
+		
+		global $wpdb;
+		if (is_plugin_active_for_network('advanced-cf7-db/advanced-cf7-db.php')) {
+			$old_blog = $wpdb->blogid;
+			switch_to_blog($blog_id);
+				create_table_cf7_vdata_add_blog();
+				create_table_cf7_vdata_entry_add_blog();
+			switch_to_blog($old_blog);
+		}
+	}
+	
+	// create table when plugin update
+	public function vsz_cf7_create_new_table_for_sites(){
+	
+		global $vsz_cf7db_current_version;
+		global $wpdb;
+		$cf7_db_version = '';
+		$cf7_db_version = get_option('vsz_cf7_db_version');
+		
+		
+		if(isset($cf7_db_version) && empty($cf7_db_version)){
+			if (function_exists('is_multisite') && is_multisite()) {
+			// check if it is a network activation - if so, run the activation function for each blog id
+				 $old_blog = $wpdb->blogid;
+				// Get all blog ids
+				$blogids = $wpdb->get_col("SELECT blog_id FROM $wpdb->blogs");
+				foreach ($blogids as $blog_id) {
+					switch_to_blog($blog_id);
+					
+					create_table_cf7_vdata_add_blog();
+					create_table_cf7_vdata_entry_add_blog();
+				}
+				switch_to_blog($old_blog);
+			}else{
+					create_table_cf7_vdata_add_blog();
+					create_table_cf7_vdata_entry_add_blog();
+			}
+			
+			 update_option('vsz_cf7_db_version',$vsz_cf7db_current_version);
+			// Add Capability when update plugin 
+			$role = get_role( 'administrator');
+			$args = array('post_type' => 'wpcf7_contact_form', 'posts_per_page' => -1); 
+			$cf7Forms = get_posts( $args );
+			foreach($cf7Forms as $data){
+				$role->add_cap('cf7_db_form_view'.$data->ID);
+				$role->add_cap('cf7_db_form_edit_'.$data->ID);
+			}
+			
+		}else if($cf7_db_version != $vsz_cf7db_current_version){
+			if (function_exists('is_multisite') && is_multisite()) {
+			// check if it is a network activation - if so, run the activation function for each blog id
+				 $old_blog = $wpdb->blogid;
+				// Get all blog ids
+				$blogids = $wpdb->get_col("SELECT blog_id FROM $wpdb->blogs");
+				foreach ($blogids as $blog_id) {
+					switch_to_blog($blog_id);
+					create_table_cf7_vdata_add_blog();
+					create_table_cf7_vdata_entry_add_blog();
+				}
+				switch_to_blog($old_blog);
+			}else{
+					create_table_cf7_vdata_add_blog();
+					create_table_cf7_vdata_entry_add_blog();
+			}
+			// Add Capability when update plugin 
+			$role = get_role( 'administrator');
+			$args = array('post_type' => 'wpcf7_contact_form', 'posts_per_page' => -1); 
+			$cf7Forms = get_posts( $args );
+			foreach($cf7Forms as $data){
+				$role->add_cap('cf7_db_form_view'.$data->ID);
+				$role->add_cap('cf7_db_form_edit_'.$data->ID);
+			} 
+		   update_option('vsz_cf7_db_version',$vsz_cf7db_current_version);
+			
+		}
+		if(is_admin()){	
+			// remove all capability assign to role or user
+			do_action('test_test',wp_get_current_user());
+			$vsz_cf7_capability = get_option('vsz_cf7_capability',array());
+			if(isset($vsz_cf7_capability) && !empty($vsz_cf7_capability)){
+				foreach($vsz_cf7_capability as $retrive_data){
+					cf7_db_capability($retrive_data['type'],$retrive_data['type_value'],$retrive_data['contact_form'],$retrive_data['access'],'remove');
+				}
+				update_option("vsz_cf7_capability",'');
+			}
+			
+			
+			
+		}	
+		add_shortcode( 'cf7-db-display-ip',array($this,'cf7_db_vsz_cf7_display_ip'));
+	}
+	function cf7_db_vsz_cf7_display_ip($atts, $content, $name){
+		
+		define('vsz_cf7_display_ip',true);
+	}
+	
+	
+	
+	// Create role and assign capability for user
+	public function vsz_cf7_create_role_for_contact_form($post_id){
+		$post_type = get_post_type($post_id);
+		if($post_type != 'wpcf7_contact_form'){
+			return;
+		}
+		$role = get_role( 'administrator');
+		$role->add_cap('cf7_db_form_view'.$post_id);
+		$role->add_cap('cf7_db_form_edit_'.$post_id);
+	}
 }//close class
 
 //Generate CSV file here
@@ -751,25 +919,218 @@ function vsz_cf7_export_to_csv($fid, $ids_export = ''){
 	$form_title = esc_html($obj_form[0]->title());
 	//Get export data 
 	$data = create_export_query($fid, $ids_export, 'data_id desc');
-	//Setup export data 
-	$data_sorted = wp_unslash(vsz_cf7_sortdata($data));
 	
-	//Generate CSV file 
-	header('Content-Type: text/csv; charset=UTF-8');
-	header('Content-Disposition: attachment;filename="'.$form_title.'.csv";');
-    $fp = fopen('php://output', 'w');
-    fputs($fp, "\xEF\xBB\xBF");
-    fputcsv($fp, array_values(array_map('sanitize_text_field',$fields)));
-    foreach ($data_sorted as $k => $v){
-        $temp_value = array();
-        foreach ($fields as $k2 => $v2){
-            $temp_value[] = ((isset($v[$k2])) ? htmlspecialchars_decode($v[$k2]) : '');
-        }
-        fputcsv($fp, $temp_value);
-    }
+	if(!empty($data)){
+		//Setup export data 
+		$data_sorted = wp_unslash(vsz_cf7_sortdata($data));
+		
+		//Generate CSV file 
+		header('Content-Type: text/csv; charset=UTF-8');
+		header('Content-Disposition: attachment;filename="'.$form_title.'.csv";');
+		$fp = fopen('php://output', 'w');
+		fputs($fp, "\xEF\xBB\xBF");
+		fputcsv($fp, array_values(array_map('sanitize_text_field',$fields)));
+		foreach ($data_sorted as $k => $v){
+			$temp_value = array();
+			foreach ($fields as $k2 => $v2){
+				$temp_value[] = ((isset($v[$k2])) ? htmlspecialchars_decode($v[$k2]) : '');
+			}
+			fputcsv($fp, $temp_value);
+		}
 
-    fclose($fp);
-    exit();
+		fclose($fp);
+		exit();
+	}
+}
+//Generate excel file here
+function vsz_cf7_export_to_excel($fid, $ids_export){
+	
+	 global $wpdb;
+	
+	$fid = intval($fid);
+    $fields = vsz_cf7_get_db_fields($fid);
+	
+	//Get form id related contact form object
+	$obj_form = vsz_cf7_get_the_form_list($fid);
+	//get current form title 
+	$form_title = esc_html($obj_form[0]->title());
+	//Get export data 
+	$data = create_export_query($fid, $ids_export, 'data_id desc');
+	
+	if(!empty($data)){
+		//Setup export data 
+		$data_sorted = wp_unslash(vsz_cf7_sortdata($data));
+		
+		$arrHeader = array_values(array_map('sanitize_text_field',$fields));
+		
+		//Check that the class exists before trying to use it
+		if(!class_exists('Excel')){
+			//Include excel class file 
+			require_once(dirname(__FILE__).'/class/Excel.class.php');
+			//create excel class object
+			$xls = new Excel($form_title);
+			
+			//First we will set header in excel file
+			$i=0;
+			foreach($arrHeader as $colName){
+				//Set column index in file
+				$xls->home($i);
+				//Set column name in file 
+				$xls->label($colName);
+				$i++;
+			}
+			
+			foreach ($data_sorted as $k => $v){
+				//Define column index here 
+				$i=0;	
+				//Consider new row for each entry here 
+				$xls->down();
+				//Get column order wise value here 
+				foreach ($fields as $k2 => $v2){
+					$colVal = ((isset($v[$k2])) ? htmlspecialchars_decode($v[$k2]) : '');
+					//Set column index here 
+					$xls->home($i);
+					//Set Column value here 
+					$xls->label($colVal);
+					//Conider new column here 
+					$i++;
+				}
+			}
+			
+			//Download excel file here 
+			$xls->send();
+			
+			exit;
+		}
+		
+	}
+}
+//Generate pdf file here
+function vsz_cf7_export_to_pdf($fid, $ids_export){
+	 global $wpdb;
+	$fid = intval($fid);
+	$fields = vsz_cf7_get_db_fields($fid);
+	
+	//Get form id related contact form object
+	$obj_form = vsz_cf7_get_the_form_list($fid);
+	//get current form title 
+	$form_title = esc_html($obj_form[0]->title());
+	//Get export data 
+	$data = create_export_query($fid, $ids_export, 'data_id desc');
+	
+	if(!empty($data)){
+		//Setup export data 
+		$data_sorted = wp_unslash(vsz_cf7_sortdata($data));
+		
+		$arrHeader = array_values(array_map('sanitize_text_field',$fields));
+		
+		//Check that the class exists before trying to use it
+		if(!class_exists('MYPDF')){
+			//Include pdf class file 
+			require_once(dirname(__FILE__).'/pdfgenerate/mypdf.class.php');
+			$pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, false, 'UTF-8', false);
+
+			// set document information
+			$pdf->SetCreator(PDF_CREATOR);
+
+			// set header and footer fonts
+			$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+			$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+
+			//set margins
+			$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP + 2, PDF_MARGIN_RIGHT);
+			$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+			$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+			$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM + 10);
+
+			//set image scale factor
+			$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+			//set some language-dependent strings
+			$pdf->setLanguageArray($l);
+
+			// set font
+			$pdf->SetFont('helvetica', '', 8);
+
+			// add a page
+			$pdf->AddPage();
+			$docName ="";
+			$timeStamp = date('Ymdhis');
+			$docName = $form_title."-".$timeStamp;
+			// pdf html content
+			$content = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+						"http://www.w3.org/TR/html4/loose.dtd">
+						<html>
+						<head>
+						<link rel="important stylesheet" href="chrome://messagebody/skin/messageBody.css">
+						<meta http-equiv="Content-Type" content="text/html; " />
+						</head>
+						<body><style>table, th, td {
+							border: 1px solid #ddd;
+							border-collapse: collapse;
+						}
+						td{
+						padding:5px;
+						}
+						</style>';
+			$content.= '<div style="text-align:center;font-size:18px;margin:20px;line-height:30px;">'.$form_title.'</div>';
+			$content.= '<table border="0" cellpadding="0" cellspacing="0" style="border:1px solid #ccc;margin-top:0;margin-left:auto;margin-right:auto;font-family:arial;margin-bottom:10px;width:100%;" >';
+
+			$i=0;
+			$content .= '<tr bgcolor="#000" style="color:#fff;">';
+				foreach($arrHeader as $colName){
+				$content .= '<td style="font-family:arial;font-weight:bold;font-size:14px;color:#fff;padding:5px;line-height:20px;" CELLSPACING=10>'.$colName.'</td>';
+			}
+			$content .= '</tr>';
+
+			foreach ($data_sorted as $k => $v){
+				$content .= '<tr>';
+				//Define column index here 
+				$i=0;	
+				//Consider new row for each entry here 
+				
+				//Get column order wise value here 
+				foreach ($fields as $k2 => $v2){
+					$colVal = ((isset($v[$k2])) ? htmlspecialchars_decode($v[$k2]) : '');
+					$content .= '<td style="padding:5px;line-height:20px;" CELLSPACING=10>'.$colVal.'</td>';
+				}
+				$content .= '</tr>';
+			}
+			
+				
+			$content.='</table></body></html>';
+		
+			// *******************************************************************
+			
+			$pdf->lastPage();
+			
+			
+			$pdf->writeHTML($content, true, false, true, false, '');
+
+			//Close and output PDF document
+			
+			$upload_dir = wp_upload_dir();
+			
+			$folderPath = $upload_dir['path']."/";
+			
+			
+			$fileFullName = $docName.'.pdf';
+			$readFilePath = $folderPath.$fileFullName;
+			
+			//$filePath = $folderPath;
+			
+			$pdf->Output($folderPath . $docName . '.pdf', 'F');
+			 if(file_exists($readFilePath)){
+				header('Content-Type: application/pdf');
+				header('Content-Disposition: attachment; filename="'.$docName.'.pdf"' );
+				readfile($readFilePath);
+				// delete pdf file
+				unlink($readFilePath);
+			}
+			
+		}
+	}
 }
 
 //Setup export related query here
@@ -842,7 +1203,7 @@ function create_export_query($fid,$ids_export,$cf7d_entry_order_by){
 			}
 			$data_ids = rtrim($data_ids,',');
 		}
-		
+		$search_date_query = "";
 		$query = sprintf("SELECT * FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE `cf7_id` = %d AND data_id IN(SELECT * FROM (SELECT data_id FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE 1 = 1 AND `cf7_id` = ".$fid." ".$search_date_query." ".((!empty($search)) ? "AND `value` LIKE '%%".$search."%%'" : ""). " AND data_id IN (".$data_ids.") GROUP BY `data_id` ORDER BY ".$cf7d_entry_order_by." ) temp_table) ORDER BY " . $cf7d_entry_order_by, $fid); 
 		
 	}
@@ -858,3 +1219,75 @@ function create_export_query($fid,$ids_export,$cf7d_entry_order_by){
 	//Return result set
 	return  $data;
 }//Close export query function 
+
+
+// Create table when new site added.
+function create_table_cf7_vdata_add_blog(){
+	
+	global $wpdb;
+	$table_name = $wpdb->prefix .'cf7_vdata';
+	
+	$charset_collate = $wpdb->get_charset_collate();
+	if( $wpdb->get_var( "show tables like '{$table_name}'" ) != $table_name ) {
+        $sql = "CREATE TABLE " . $table_name . " (
+             `id` int(11) NOT NULL AUTO_INCREMENT,
+			 `created` timestamp NOT NULL,
+			  UNIQUE KEY id (id)
+		)$charset_collate;";
+		
+        require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+        dbDelta( $sql );
+    }
+}
+/**
+ * Contact Form entry table created from here
+ */
+
+function create_table_cf7_vdata_entry_add_blog(){
+	global $wpdb;
+	$table_name = $wpdb->prefix .'cf7_vdata_entry';
+	$charset_collate = $wpdb->get_charset_collate();
+	if( $wpdb->get_var( "show tables like '{$table_name}'" ) != $table_name ) {
+        $sql = "CREATE TABLE " . $table_name . " (
+				`id` int(11) NOT NULL AUTO_INCREMENT,
+				`cf7_id` int(11) NOT NULL,
+				`data_id` int(11) NOT NULL,
+				`name` varchar(250),
+				`value` text,
+				UNIQUE KEY id (id)
+		)$charset_collate;";
+		
+        require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+        dbDelta( $sql );
+    }
+}
+
+// Check user capability
+function cf7_check_capability($user_capability){
+	
+	if(is_super_admin()){
+		return true;	
+	}
+	$user_id = get_current_user_id();	
+	$subject = new WP_User($user_id);
+	$allcaps= $subject->allcaps;
+	$caps = $subject->caps;
+	
+	$caps    = array_merge(wp_get_current_user()->caps, $caps);
+	$allcaps = array_merge(wp_get_current_user()->allcaps, $allcaps);    
+	
+	if (wp_get_current_user()->ID == $subject->ID) {
+		wp_get_current_user()->allcaps = $allcaps;
+		wp_get_current_user()->caps    = $caps;
+	}
+	$user = wp_get_current_user();
+	
+	foreach($user->allcaps as $key=>$capability){
+		if($capability == true){
+			if($key == $user_capability){
+				return true;
+			}
+		}	
+	}
+	return false;
+}

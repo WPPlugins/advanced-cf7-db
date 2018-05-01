@@ -70,7 +70,17 @@ function checkfile(sender) {
 jQuery(document).ready(function($) {
     
 	//Set date picker on listing screen
-	jQuery(".input-cf-date").datetimepicker({
+	jQuery("#start_date").datetimepicker({
+		
+		timepicker:false,
+		format:'d/m/Y',	
+		maxDate: "0",
+		changeMonth: true,
+		changeYear: true,
+		closeOnDateSelect: true,
+		scrollInput: false,
+	});
+	jQuery("#end_date").datetimepicker({
 		
 		timepicker:false,
 		format:'d/m/Y',	
@@ -247,7 +257,7 @@ jQuery(document).ready(function($) {
 						}
 					}
 					//Check field type is text then execute this code
-					else if(arr_field_type[index]['basetype'] == 'text' || arr_field_type[index]['basetype'] == 'email'  || arr_field_type[index]['basetype'] == 'url'|| arr_field_type[index]['basetype'] == 'tel' || arr_field_type[index]['basetype'] == 'URL' || arr_field_type[index]['basetype'] == 'number' || arr_field_type[index]['basetype'] == 'date' || arr_field_type[index]['basetype'] == 'acceptance' || arr_field_type[index]['basetype'] == 'quiz' ){
+					else if(arr_field_type[index]['basetype'] == 'dynamictext' || arr_field_type[index]['basetype'] == 'dynamichidden' || arr_field_type[index]['basetype'] == 'text' || arr_field_type[index]['basetype'] == 'email'  || arr_field_type[index]['basetype'] == 'url'|| arr_field_type[index]['basetype'] == 'tel' || arr_field_type[index]['basetype'] == 'URL' || arr_field_type[index]['basetype'] == 'number' || arr_field_type[index]['basetype'] == 'date' || arr_field_type[index]['basetype'] == 'acceptance' || arr_field_type[index]['basetype'] == 'quiz' ){
 						jQuery('form#cf7d-modal-form-edit-value .field-' + index).attr('value', el);
 					}
 					//Set other fields values likes text area and option values

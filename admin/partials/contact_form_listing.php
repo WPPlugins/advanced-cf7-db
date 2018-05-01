@@ -32,8 +32,20 @@ else{
 	$form_list = vsz_cf7_get_the_form_list();
 	$url = '';
 	$fid = '';
+	
 	//Get selected form Id value
 	if(isset($_GET['cf7_id']) && !empty($_GET['cf7_id'])){
+		$edit = false;
+		$entry_actions = array();
+		if (!cf7_check_capability('cf7_db_form_view'.$_GET['cf7_id']) && !cf7_check_capability('cf7_db_form_edit_'.$_GET['cf7_id'])){
+			wp_die( __('You do not have sufficient permissions to access this page.') );
+		}
+		if(cf7_check_capability('cf7_db_form_edit_'.$_GET['cf7_id'])){
+			$edit = true;
+			$entry_actions = array(
+				'delete' => 'Delete'
+			);
+		}
 		$fid = intval($_GET['cf7_id']);
 		$menu_url = menu_page_url('contact-form-listing',false);
 		$url = $menu_url.'&cf7_id='.$fid;
@@ -72,13 +84,16 @@ else{
 							//Display all existing form list here
 							$exist_entry_flag = false;
 							if(!empty($form_list)){
+								
 								foreach($form_list as $objForm){
 									if(!empty($arr_form_id) && in_array($objForm->id(),$arr_form_id)){
 										$exist_entry_flag = true;
-										if(!empty($fid) && $fid === $objForm->id())
-											print '<option value="'.$objForm->id().'" selected>'.esc_html($objForm->title()).'</option>';
-										else	
-											print '<option value="'.$objForm->id().'" >'.esc_html($objForm->title()).'</option>';
+										if (cf7_check_capability('cf7_db_form_view'.$objForm->id()) || cf7_check_capability('cf7_db_form_edit_'.$objForm->id()) ){
+											if(!empty($fid) && $fid === $objForm->id())
+												print '<option value="'.$objForm->id().'" selected>'.esc_html($objForm->title()).'</option>';
+											else	
+												print '<option value="'.$objForm->id().'" >'.esc_html($objForm->title()).'</option>';
+										}		
 									}//Close if
 								}//close for each
 							}//close if
@@ -206,9 +221,7 @@ else{
 		$total = count($arr_total);
 		
 		//Define bulk action array
-		$entry_actions = array(
-				'delete' => 'Delete'
-			);
+		
 		//Add filter for customize bulk action values	
 		$entry_actions = apply_filters('vsz_cf7_entry_actions', $entry_actions);
 		
@@ -225,7 +238,7 @@ else{
 						<div class="from-to-date-search">
 							<input type="text" name="start_date" id="start_date" placeholder="From" value="<?php print isset($_POST['start_date']) ? esc_attr($_POST['start_date']) : '';?>" class="input-cf-date">
 							<input type="text" name="end_date" id="end_date" placeholder="To" value="<?php print isset($_POST['end_date']) ? esc_attr($_POST['end_date']) : '';?>" class="input-cf-date" >
-							<input type="button" name="search_date" id="search_date" value="Search By Date" class="button action" >
+							<input type="button" name="search_date" id="search_date" value="Search By Date" title="Search By Date" class="button action" >
 						</div>
 						<div class="type-something"><?php 
 							//Display Search section here
@@ -244,7 +257,7 @@ else{
 								//Get all bulk action values
 								echo vsz_cf7_arr_to_option($entry_actions); 
 							?></select>
-							<input id="doaction" name="btn_apply" class="button action" value="<?php _e('Apply'); ?>" type="submit" /><?php 
+							<input id="doaction" name="btn_apply" class="button action" value="<?php _e('Apply'); ?>" title="<?php _e('Apply'); ?>" type="submit" /><?php 
 							//Display Export button option values
 							do_action('vsz_cf7_after_bulkaction_btn', $fid); 
 							?><div class="tablenav-pages">
@@ -276,7 +289,9 @@ else{
 								<tr><?php
 									echo '<td id="cb" class="manage-column column-cb check-column"><input type="checkbox" id="cb-select-all-1" /></td>';
 									//Display Edit headion field
-									do_action('vsz_cf7_admin_after_heading_field');
+									if($edit == true){
+										do_action('vsz_cf7_admin_after_heading_field');
+									}	
 									//Define table header section here
 									foreach ($fields as $k => $v){
 										echo '<th class="manage-column" data-key="'.esc_html($v).'">'.vsz_cf7_admin_get_field_name($v).'</th>';
@@ -289,49 +304,64 @@ else{
 								$arr_field_type_info = vsz_field_type_info($fid);
 								
 								//Get all fields related information
-								foreach ($data_sorted as $k => $v) {
-									$k = (int)$k;
-									echo '<tr>';
-									echo '<th class="check-column" scope="row"><input id="cb-select-'.$k.'" type="checkbox" name="del_id[]" value="'.$k.'" /></th>';
-									$row_id = $k;
-									//Display edit entry icon
-									do_action('vsz_cf7_admin_after_body_field', $fid, $row_id);
-									foreach ($fields as $k2 => $v2) {
-										//Get fields related values
-										$_value = ((isset($v[$k2])) ? $v[$k2] : '&nbsp;');
-										
-										//Check value is URL or not
-										if (!filter_var($_value, FILTER_VALIDATE_URL) === false) {
-											$_value = esc_url($_value);
-											//If value is url then setup anchor tag with value
-											if(!empty($arr_field_type_info) && array_key_exists($k2,$arr_field_type_info) && $arr_field_type_info[$k2] == 'file'){
-												//Add download attributes in tag if field type is attachement
-												$_value = sprintf('<a href="%s" target="_blank" download >%s</a>', $_value, basename($_value));
-												echo '<td data-head="'.vsz_cf7_admin_get_field_name($v2).'">'.$_value.'</td>';
+								if(!empty($data_sorted)){
+									foreach ($data_sorted as $k => $v) {
+										$k = (int)$k;
+										echo '<tr>';
+										echo '<th class="check-column" scope="row"><input id="cb-select-'.$k.'" type="checkbox" title="Check" name="del_id[]" value="'.$k.'" /></th>';
+										$row_id = $k;
+										//Display edit entry icon
+										if($edit == true){
+											do_action('vsz_cf7_admin_after_body_field', $fid, $row_id);
+										}
+										foreach ($fields as $k2 => $v2) {
+											//Get fields related values
+											$_value = ((isset($v[$k2])) ? $v[$k2] : '&nbsp;');
+											
+											//Check value is URL or not
+											if (!filter_var($_value, FILTER_VALIDATE_URL) === false) {
+												$_value = esc_url($_value);
+												//If value is url then setup anchor tag with value
+												if(!empty($arr_field_type_info) && array_key_exists($k2,$arr_field_type_info) && $arr_field_type_info[$k2] == 'file'){
+													//Add download attributes in tag if field type is attachement
+													$_value = sprintf('<a href="%s" target="_blank" title="%s" download >%s</a>', $_value,$_value,basename($_value));
+													echo '<td data-head="'.vsz_cf7_admin_get_field_name($v2).'">'.$_value.'</td>';
+												}
+												else{
+													$_value = sprintf('<a href="%s" target="_blank" title="%s" >%s</a>', $_value,$_value,basename($_value));
+													echo '<td data-head="'.vsz_cf7_admin_get_field_name($v2).'">'.$_value.'</td>';
+												}
 											}
 											else{
-												$_value = sprintf('<a href="%s" target="_blank" >%s</a>', $_value, basename($_value));
-												echo '<td data-head="'.vsz_cf7_admin_get_field_name($v2).'">'.$_value.'</td>';
+												$_value = esc_html(html_entity_decode($_value));
+												//var_dump(($_value)); var_dump(strlen($_value)); exit;
+												if(strlen($_value) > $display_character){
+													
+													echo '<td data-head="'.vsz_cf7_admin_get_field_name($v2).'">'.substr($_value, 0, $display_character).'...</td>';
+												}else{
+													echo '<td data-head="'.vsz_cf7_admin_get_field_name($v2).'">'.$_value.'</td>';
+												}	
 											}
-										}
-										else{
-											$_value = esc_html($_value);
-											//var_dump(($_value)); var_dump(strlen($_value)); exit;
-											if(strlen($_value) > $display_character){
-												echo '<td data-head="'.vsz_cf7_admin_get_field_name($v2).'">'.substr($_value, 0, $display_character).'...</td>';
-											}else{
-												echo '<td data-head="'.vsz_cf7_admin_get_field_name($v2).'">'.$_value.'</td>';
-											}	
-										}
+										}//Close foreach
+										echo '</tr>';
 									}//Close foreach
-									echo '</tr>';
-								}//Close foreach
+								}
+								else{
+									?><tr><?php
+										$span = count($fields) + 2;
+										?><td colspan="<?php echo $span; ?>">
+											No records found.
+										</td><?php
+									?></tr><?php
+								}
 							?></tbody>
 							<tfoot>
 								<tr><?php
 									//Setup header section in table footer area
 									echo '<td class="manage-column column-cb check-column"><input type="checkbox" id="cb-select-all-2" /></td>';
-									do_action('vsz_cf7_admin_after_heading_field');
+									if($edit == true){
+										do_action('vsz_cf7_admin_after_heading_field');
+									}	
 									foreach ($fields as $k => $v){
 										echo '<th class="manage-column" data-key="'.esc_html($v).'">'.vsz_cf7_admin_get_field_name($v).'</th>';
 									}

@@ -123,7 +123,7 @@ class Advanced_Cf7_Db {
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-advanced-cf7-db-public.php';
+		
 
 		$this->loader = new Advanced_Cf7_Db_Loader();
 
@@ -196,6 +196,16 @@ class Advanced_Cf7_Db {
 		//Define filter for which field information  not editable in edit form 
 		$this->loader->add_filter('vsz_cf7_not_editable_fields',$plugin_admin, 'vsz_cf7_not_editable_fields_callback');
 
+		// Multi site support
+		$this->loader->add_action( 'wpmu_new_blog',$plugin_admin,'vsz_cf7_add_new_table_for_sites', 10, 6);
+		
+		// Provide multi site support for active plugin
+		$this->loader->add_action( 'plugins_loaded',$plugin_admin,'vsz_cf7_create_new_table_for_sites');
+		
+		// Provide custom capability
+		$this->loader->add_action('save_post',$plugin_admin,'vsz_cf7_create_role_for_contact_form');
+		
+		
 	}
 
 	/**
@@ -207,10 +217,7 @@ class Advanced_Cf7_Db {
 	 */
 	private function define_public_hooks() {
 
-		$plugin_public = new Advanced_Cf7_Db_Public( $this->get_plugin_name(), $this->get_version() );
-
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+		
 
 	}
 

@@ -31,7 +31,11 @@ else{
 
 	//Get selected form Id value
 	if(isset($_GET['import_cf7_id']) && !empty($_GET['import_cf7_id'])){
+		
 		$fid = intval($_GET['import_cf7_id']);
+		if (!cf7_check_capability('cf7_db_form_view'.$_GET['import_cf7_id']) && !cf7_check_capability('cf7_db_form_edit_'.$_GET['import_cf7_id'])){
+			wp_die( __('You do not have sufficient permissions to access this page.') );
+		}
 		$menu_url = menu_page_url('import_cf7_csv',false);
 		$url = $menu_url.'&import_cf7_id='.$fid;
 	}
@@ -70,10 +74,12 @@ else{
 							//Display all existing form list here
 							if(!empty($form_list)){
 								foreach($form_list as $objForm){
-									if(!empty($fid) && $fid === $objForm->id())
-										print '<option value="'.$objForm->id().'" selected>'.esc_html($objForm->title()).'</option>';
-									else	
-										print '<option value="'.$objForm->id().'" >'.esc_html($objForm->title()).'</option>';
+									if (cf7_check_capability('cf7_db_form_view'.$objForm->id()) || cf7_check_capability('cf7_db_form_edit_'.$objForm->id())){
+										if(!empty($fid) && $fid === $objForm->id())
+											print '<option value="'.$objForm->id().'" selected>'.esc_html($objForm->title()).'</option>';
+										else	
+											print '<option value="'.$objForm->id().'" >'.esc_html($objForm->title()).'</option>';
+									}		
 								}
 							}
 						?></select>

@@ -90,9 +90,10 @@ function vsz_cf7_add_extra_fields($cf7){
 	
     //Get time stamp value in valid date format
     $cf7->posted_data['submit_time'] = date_i18n('Y-m-d H:i:s', $submission->get_meta('timestamp'));
-    //Get submitted ip address 
-    $cf7->posted_data['submit_ip'] = (isset($_SERVER['X_FORWARDED_FOR'])) ? $_SERVER['X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR'];
-    
+	if(!defined('vsz_cf7_display_ip')){	
+		//Get submitted ip address 
+		$cf7->posted_data['submit_ip'] = (isset($_SERVER['X_FORWARDED_FOR'])) ? $_SERVER['X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR'];
+   } 
 	return $cf7;
 }
 
@@ -184,10 +185,16 @@ function vsz_cf7_get_db_fields($fid, $filter = true){
     $fields = array();
 	if(!empty($data)){
 		foreach ($data as $k => $v) {
-			$fields[$v->name] = htmlspecialchars_decode($v->name);
+			if(defined('vsz_cf7_display_ip')){
+				if($k != 'submit_ip'){
+					$fields[$v->name] = htmlspecialchars_decode($v->name);
+				}
+			}else{
+				$fields[$v->name] = htmlspecialchars_decode($v->name);
+			}	
 		}
 	}
-	
+
 	//Check if filter is true or not
     if ($filter) {
 		//Get all fields information as per Setting screen
@@ -265,7 +272,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 			$label = esc_html($v);
 		}
 		$loading = __('Loading...');
-		echo sprintf("<li><span class=\"label\">%s (%s)</span> <textarea name=\"field[%s]\" rows=\"3\" cols=\"20\" class=\"field-%s\" >%s</textarea><span class=\"margin_left\">(Multiple entry start from new line)</span></li>", $label, $type, $k, $k, $loading);
+		echo sprintf("<li class=\"clearfix\"><span class=\"label\">%s (%s)</span> <textarea name=\"field[%s]\" rows=\"3\" cols=\"20\" class=\"field-%s\" >%s</textarea><span class=\"margin_left\">(Multiple entry start from new line)</span><div class=\"clear\"></div></li>", $label, $type, $k, $k, $loading);
 	}
 	else if($type == 'radio'){
 		
@@ -276,7 +283,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 			$label = esc_html($v);
 		}
 		$loading = __('Loading...');
-		echo sprintf("<li><span class=\"label\">%s (%s)</span> <textarea name=\"field[%s]\" rows=\"3\" cols=\"20\" class=\"field-%s\" >%s</textarea></li>", $label, $type,$k, $k, $loading);
+		echo sprintf("<li class=\"clearfix\"><span class=\"label\">%s (%s)</span> <textarea name=\"field[%s]\" rows=\"3\" cols=\"20\" class=\"field-%s\" >%s</textarea><div class=\"clear\"></div></li>", $label, $type,$k, $k, $loading);
 	}
 	else if($type == 'select'){
 		if(is_array($v)){
@@ -286,7 +293,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 			$label = esc_html($v);
 		}
 		$loading = __('Loading...');
-		echo sprintf("<li><span class=\"label\">%s (%s)</span> <textarea name=\"field[%s]\" rows=\"3\" cols=\"20\" class=\"field-%s\" >%s</textarea></li>", $label, $type, $k, $k, $loading);
+		echo sprintf("<li class=\"clearfix\"><span class=\"label\">%s (%s)</span> <textarea name=\"field[%s]\" rows=\"3\" cols=\"20\" class=\"field-%s\" >%s</textarea><div class=\"clear\"></div></li>", $label, $type, $k, $k, $loading);
 	}
 	else if($type == 'textarea'){
 		if(is_array($v)){
@@ -296,7 +303,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 			$label = esc_html($v);
 		}
 		$loading = __('Loading...');
-		echo sprintf("<li><span class=\"label\">%s</span> <textarea name=\"field[%s]\" rows=\"3\" cols=\"20\" class=\"field-%s\" >%s</textarea></li>", $label, $k, $k, $loading);
+		echo sprintf("<li class=\"clearfix\"><span class=\"label\">%s</span> <textarea name=\"field[%s]\" rows=\"3\" cols=\"20\" class=\"field-%s\" >%s</textarea><div class=\"clear\"></div></li>", $label, $k, $k, $loading);
 	}
 	else if($type == 'file'){
 		if(is_array($v)){
@@ -307,7 +314,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		}
 		$loading = __('Loading...');
 		$disable = 'readonly';
-		echo sprintf("<li><span class=\"label\">%s</span> <input class=\"field-%s\" type=\"text\" name=\"field[%s]\" value=\"%s\" %s /></li>", $label, $k, $k, $loading, $disable);
+		echo sprintf("<li class=\"clearfix\"><span class=\"label\">%s</span> <input class=\"field-%s\" type=\"text\" name=\"field[%s]\" value=\"%s\" %s /><div class=\"clear\"></div></li>", $label, $k, $k, $loading, $disable);
 	}else if($type == 'tel'){
 
 		if(is_array($v)){
@@ -317,8 +324,8 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 			$label = esc_html($v);
 		}
 		$loading = __('Loading...');
-		echo sprintf("<li><span class=\"label\">%s</span> <input class=\"field-%s\" type=\"text\" name=\"field[%s]\" value=\"%s\" /></li>", $label, $k, $k, $loading);
-	}else if($type == 'url' || $type == 'number' || $type == 'date' || $type == 'acceptance' || $type == 'quiz'){
+		echo sprintf("<li class=\"clearfix\"><span class=\"label\">%s</span> <input class=\"field-%s\" type=\"text\" name=\"field[%s]\" value=\"%s\" /><div class=\"clear\"></div></li>", $label, $k, $k, $loading);
+	}else if($type == 'dynamictext'|| $type == 'dynamichidden'|| $type == 'url' || $type == 'number' || $type == 'date' || $type == 'acceptance' || $type == 'quiz'){
 		if(is_array($v)){
 			$label = esc_html($v['label']);
 		}
@@ -326,7 +333,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 			$label = esc_html($v);
 		}
 		$loading = __('Loading...');
-		echo sprintf("<li><span class=\"label\">%s</span> <input class=\"field-%s\" type=\"text\" name=\"field[%s]\" value=\"%s\" /></li>", $label, $k, $k, $loading);
+		echo sprintf("<li class=\"clearfix\"><span class=\"label\">%s</span> <input class=\"field-%s\" type=\"text\" name=\"field[%s]\" value=\"%s\" /><div class=\"clear\"></div></li>", $label, $k, $k, $loading);
 	}
 
 }

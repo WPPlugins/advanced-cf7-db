@@ -109,8 +109,8 @@
   float: left;
   /*font-style: italic;*/
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  /* text-overflow: ellipsis;
+  white-space: nowrap; */
   width: 140px;
 }
 
@@ -239,6 +239,7 @@
     color: #fff;
 	height: 34px;
 	box-shadow:none;
+	vertical-align:top;
 }
 .bulk-actions .button{
 	display: inline-block;
@@ -556,3 +557,28 @@ h3.advanced {
 	width:783px !important;
 }
 .import-csv .upload-csv label{padding-left:30px;}
+@media(max-width:1082px){
+.from-to-date-search {
+	display:block;
+	margin:0 0 15px 0;
+}
+	
+}
+@media(max-width:782px){
+	.cf7d-admin-table tr:not(.inline-edit-row):not(.no-items) td:not(.check-column) {
+	display:table-cell;
+	word-wrap: break-word;
+}
+}
+@media(max-width:520px){
+.from-to-date-search .input-cf-date {
+	width:49%;
+	margin:0 0px 5px !important;}
+}
+@media(max-width:400px){
+.type-something { margin-right:0px;}	
+.date-filter .reset-class {
+	margin-top: 10px;
+	float: none;
+}
+}
