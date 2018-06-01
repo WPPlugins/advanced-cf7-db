@@ -933,7 +933,7 @@ function vsz_cf7_export_to_csv($fid, $ids_export = ''){
 		foreach ($data_sorted as $k => $v){
 			$temp_value = array();
 			foreach ($fields as $k2 => $v2){
-				$temp_value[] = ((isset($v[$k2])) ? htmlspecialchars_decode($v[$k2]) : '');
+				$temp_value[] = ((isset($v[$k2])) ? remove_smart_quotes(removeAccents(html_entity_decode($v[$k2]))) : '');
 			}
 			fputcsv($fp, $temp_value);
 		}
@@ -987,11 +987,11 @@ function vsz_cf7_export_to_excel($fid, $ids_export){
 				$xls->down();
 				//Get column order wise value here 
 				foreach ($fields as $k2 => $v2){
-					$colVal = ((isset($v[$k2])) ? htmlspecialchars_decode($v[$k2]) : '');
+					$colVal = ((isset($v[$k2])) ? html_entity_decode($v[$k2]) : '');
 					//Set column index here 
 					$xls->home($i);
 					//Set Column value here 
-					$xls->label($colVal);
+					$xls->label(remove_smart_quotes(removeAccents($colVal)));
 					//Conider new column here 
 					$i++;
 				}
@@ -999,7 +999,6 @@ function vsz_cf7_export_to_excel($fid, $ids_export){
 			
 			//Download excel file here 
 			$xls->send();
-			
 			exit;
 		}
 		
@@ -1057,6 +1056,7 @@ function vsz_cf7_export_to_pdf($fid, $ids_export){
 			$pdf->AddPage();
 			$docName ="";
 			$timeStamp = date('Ymdhis');
+			$form_title = preg_replace('/\s+/', '_', $form_title);
 			$docName = $form_title."-".$timeStamp;
 			// pdf html content
 			$content = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -1092,8 +1092,8 @@ function vsz_cf7_export_to_pdf($fid, $ids_export){
 				
 				//Get column order wise value here 
 				foreach ($fields as $k2 => $v2){
-					$colVal = ((isset($v[$k2])) ? htmlspecialchars_decode($v[$k2]) : '');
-					$content .= '<td style="padding:5px;line-height:20px;" CELLSPACING=10>'.$colVal.'</td>';
+					$colVal = ((isset($v[$k2])) ? html_entity_decode($v[$k2]) : '');
+					$content .= '<td style="padding:5px;line-height:20px;" CELLSPACING=10>'.remove_smart_quotes(removeAccents($colVal)).'</td>';
 				}
 				$content .= '</tr>';
 			}
@@ -1127,6 +1127,7 @@ function vsz_cf7_export_to_pdf($fid, $ids_export){
 				readfile($readFilePath);
 				// delete pdf file
 				unlink($readFilePath);
+				exit;
 			}
 			
 		}

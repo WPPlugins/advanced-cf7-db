@@ -1,9 +1,9 @@
 === Advanced Contact form 7 DB ===
 Contributors: vsourz1td
-Tags: contact form 7 db, advanced cf7 db, contact form 7 database, contact form db,  contact form 7, database, cf7db, save-contact-form, Save-Forms-Data, import-cf7, export-contact-data, view-cf7-entry
+Tags: contact form 7 db, advanced cf7 db, contact form 7 database, contact form db, contact form 7, save form data, save contact form, save cf7, database, cf7db, save-contact-form, Save-Forms-Data, import-cf7, export-contact-data, view-cf7-entry
 Requires at least: 4.0
 Tested up to: 4.9.5
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -44,16 +44,26 @@ Attached files are stored in the /wp-content/uploads/advanced-cf7-upload directo
 1. Goto -> wp-content/themes/{active theme folder}/functions.php
 2. Open the functions.php file and place the code **do_shortcode( '[cf7-db-display-ip]' );** at the end of the file.
 
+== Commercial Features ==
+We have also introduced new feature "Schedule Report". This add-on is specially for businesses that require daily, weekly or monthly reports for the data that are stored at **Advanced Contact form 7 DB**. **Schedule Report For Advanced CF7 DB** plugin will do the same and send the email as per schedule set(Daily, Monthly, Weekly or Yearly) with report attachment. 
+
+You can download the plugin from <a target="_blank" href="https://codecanyon.net/item/schedule-report-for-advanced-cf7-db/21560647?s_rank=8">here</a>
+
+= Schedule Report Plugin Features =
+* Automatically generating the CSV report, Send an email with report attachment based on the scheduled time.
+* Option to create more than one scheduling event to get different enquiry form data report.
+* Option to select report datasheet columns from enquiry form field.
+* Provision to filter the data while creating the scheduled event for the particular report.
+* You can manage the email content by defining TO, FROM and email body content for each scheduling event.
+* The added schedule event will be added to WordPress cron schedule and accordingly will be fire at the scheduled time.
+
+
+**Need Support?** <mehul@vsourz.com>
+
 = How to use? =
 1. Install Plugin via WordPress Admin - Go to Admin > Plugins > Add New.
 2. View form entries Go To Admin >> Advanced CF7 DB >> Select form name.
 3. Import CSV file Go To Admin >> Import CSV >> Import CSV tab >> Select form name.
-
-= Commercial Features =
-We have also introduced new feature **Schedule Report.** This add-on is especially for the businesses that require daily, weekly or monthly reports for the data that are stored at **Advanced Contact form 7 DB.** **Schedule Report For Advanced CF7 DB** plugin will do the same and send the email as per schedule set(Daily, Monthly, Weekly or Yearly) with report attachment. You can download the plugin from <a target="_blank" href="https://codecanyon.net/item/schedule-report-for-advanced-cf7-db/21560647?s_rank=8">here</a>
-
-
-**Need Support?** <mehul@vsourz.com>
 
 == Installation ==
 
@@ -107,6 +117,10 @@ Restriction is simple, just code **do_shortcode( '[cf7-db-display-ip]' );** to b
 
 
 == Changelog ==
+
+= 1.4.1 =
+* Hidden field : Provision to update hidden field value.
+* Export data in EXCEL : Resolved Special characters related issue.
 
 = 1.4.0 =
 * Export data in EXCEL & PDF file.
