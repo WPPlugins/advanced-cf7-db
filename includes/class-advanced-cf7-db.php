@@ -118,7 +118,12 @@ class Advanced_Cf7_Db {
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-advanced-cf7-db-admin.php';
-
+		
+		/*
+		*** For dom pdf
+		*/
+		// require_once(dirname(dirname(__FILE__)).'/admin/pdfgenerate/dompdf/src/Dompdf.php');
+		
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.

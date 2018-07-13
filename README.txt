@@ -3,7 +3,7 @@ Contributors: vsourz1td
 Tags: contact form 7 db, advanced cf7 db, contact form 7 database, contact form db, contact form 7, save form data, save contact form, save cf7, database, cf7db, save-contact-form, Save-Forms-Data, import-cf7, export-contact-data, view-cf7-entry
 Requires at least: 4.0
 Tested up to: 4.9.5
-Stable tag: 1.4.1
+Stable tag: 1.4.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -117,6 +117,13 @@ Restriction is simple, just code **do_shortcode( '[cf7-db-display-ip]' );** to b
 
 
 == Changelog ==
+
+= 1.4.2 =
+* Fixed issue related to hiding IP address.
+* Delete attachment when the record will be deleted.
+* Search with special characters issue fixed.
+* Accents and other languages special characters support added for the export file with Excel and CSV.
+* Added the New library for the PDF.
 
 = 1.4.1 =
 * Hidden field : Provision to update hidden field value.

@@ -276,14 +276,13 @@ class Advanced_Cf7_Db_Admin {
 			$fid = intval($_REQUEST['cf7_id']);
 			$url .= '&cf7_id='.$fid;
 		}
-		?><input value="<?php echo ((isset($_POST['search_cf7_value'])) && !empty($_POST['search_cf7_value']) ? sanitize_text_field($_POST['search_cf7_value']) : ''); ?>" type="text" class="" id="cf7d-search-q" name="search_cf7_value" placeholder="<?php echo _e('Type something...'); ?>" id="" />
+		?><input value="<?php echo ((isset($_POST['search_cf7_value'])) && !empty($_POST['search_cf7_value']) ? htmlspecialchars(stripslashes(sanitize_text_field($_POST['search_cf7_value']))) : ''); ?>" type="text" class="" id="cf7d-search-q" name="search_cf7_value" placeholder="<?php echo _e('Type something...'); ?>" id="" />
 		<button data-url="<?php echo esc_url($url); ?>" class="button" type="button" id="cf7d-search-btn" title="<?php _e('Search'); ?>" ><?php _e('Search'); ?></button>
 		<?php
 	}//Close search box design function
 	
 	//Display table header in edit column here
 	function vsz_cf7_admin_after_heading_field_callback(){
-		
 		?><th style="width: 32px;" class="manage-column"><?php _e(''); ?></th><?php
 	}
 	
@@ -354,9 +353,14 @@ class Advanced_Cf7_Db_Admin {
 							$show = 1;
 							$k = esc_html($v->name);
 							$label = esc_html($v->name);
-							$show_hide_field = sprintf('<input type="hidden" class="txt_show" name="field[%s][show]" value="%d" />', $k, $show);
+							$show_hide_field = '<input type="hidden" class="txt_show" name="field['.$k.'][show]" value="'.$show.'" />';
 							//Setup fields in Setting popup
-							echo sprintf("<li class=\"".(($show == 1) ? "show" : "hide")."\"><span class=\"label\">%s</span> <input class=\"\" type=\"text\" name=\"field[%s][label]\" value=\"%s\" /><span class=\"dashicons dashicons-".(($show == 1) ? "visibility" : "hidden")."\"></span>%s</li>", $k, $k, $label, $show_hide_field);
+							echo "<li class=\"".(($show == 1) ? "show" : "hide")."\">
+									<span class=\"label\">".$k."</span> 
+									<input class=\"\" type=\"text\" name=\"field[".$k."][label]\" value=\"".$label."\" />
+									<span class=\"dashicons dashicons-".(($show == 1) ? "visibility" : "hidden")."\"></span>
+									".$show_hide_field."
+								</li>";
 							if(isset($fields[$v->name]))
 								unset($fields[$v->name]);
 						}
@@ -365,9 +369,9 @@ class Advanced_Cf7_Db_Admin {
 								$show = 1;
 								$k = esc_html($v);
 								$label = esc_html($v);
-								$show_hide_field = sprintf('<input type="hidden" class="txt_show" name="field[%s][show]" value="%d" />', $k, $show);
+								$show_hide_field = '<input type="hidden" class="txt_show" name="field['.$k.'][show]" value="'.$show.'" />';
 								//Setup fields in Setting popup
-								echo sprintf("<li class=\"".(($show == 1) ? "show" : "hide")."\"><span class=\"label\">%s</span> <input class=\"\" type=\"text\" name=\"field[%s][label]\" value=\"%s\" /><span class=\"dashicons dashicons-".(($show == 1) ? "visibility" : "hidden")."\"></span>%s</li>", $k, $k, $label, $show_hide_field);
+								echo "<li class=\"".(($show == 1) ? "show" : "hide")."\"><span class=\"label\">".$k."</span> <input class=\"\" type=\"text\" name=\"field[".$k."][label]\" value=\"".$label."\" /><span class=\"dashicons dashicons-".(($show == 1) ? "visibility" : "hidden")."\"></span>".$show_hide_field."</li>";
 							}
 						}
 					}//close fields setting if
@@ -381,9 +385,9 @@ class Advanced_Cf7_Db_Admin {
 								$show = (int)$field_settings[$k]['show'];
 								$label = esc_html($field_settings[$k]['label']);
 								//Set field display at front side or not information here
-								$show_hide_field = sprintf('<input type="hidden" class="txt_show" name="field[%s][show]" value="%d" />', $k, $show);
+								$show_hide_field = '<input type="hidden" class="txt_show" name="field['.$k.'][show]" value="'.$show.'" />';
 								//Display field in Setting POPUP
-								echo sprintf("<li class=\"".(($show == 1) ? "show" : "hide")."\"><span class=\"label\">%s</span> <input class=\"\" type=\"text\" name=\"field[%s][label]\" value=\"%s\" /><span class=\"dashicons dashicons-".(($show == 1) ? "visibility" : "hidden")."\"></span>%s</li>", $k, $k, $label, $show_hide_field);
+								echo "<li class=\"".(($show == 1) ? "show" : "hide")."\"><span class=\"label\">".$k."</span> <input class=\"\" type=\"text\" name=\"field[".$k."][label]\" value=\"".$label."\" /><span class=\"dashicons dashicons-".(($show == 1) ? "visibility" : "hidden")."\"></span>".$show_hide_field."</li>";
 								//Unset current field from DB fields array
 								unset($fields[$k]);
 							}//Close if
@@ -398,9 +402,9 @@ class Advanced_Cf7_Db_Admin {
 								$show = 1;
 								$label = esc_html($v);
 								//Set field display at front side or not information here
-								$show_hide_field = sprintf('<input type="hidden" class="txt_show" name="field[%s][show]" value="%d" />', $k, $show);
+								$show_hide_field = '<input type="hidden" class="txt_show" name="field['.$k.'][show]" value="'.$show.'" />';
 								//Display field in Setting POPUP
-								echo sprintf("<li class=\"".(($show == 1) ? "show" : "hide")."\"><span class=\"label\">%s</span> <input class=\"\" type=\"text\" name=\"field[%s][label]\" value=\"%s\" /><span class=\"dashicons dashicons-".(($show == 1) ? "visibility" : "hidden")."\"></span>%s</li>", $k, $k, $label, $show_hide_field);
+								echo "<li class=\"".(($show == 1) ? "show" : "hide")."\"><span class=\"label\">".$k."</span> <input class=\"\" type=\"text\" name=\"field[".$k."][label]\" value=\"".$label."\" /><span class=\"dashicons dashicons-".(($show == 1) ? "visibility" : "hidden")."\"></span>".$show_hide_field."</li>";
 							}
 						}//Close if for check remaining fields 
 					}//Close else
@@ -497,7 +501,7 @@ class Advanced_Cf7_Db_Admin {
 								$k = esc_html($k);
 								$loading = __('Loading...');
 								//Display Text box design here
-								echo sprintf("<li class=\"clearfix\"><span class=\"label\">%s</span> <input class=\"field-%s\" type=\"text\" name=\"field[%s]\" value=\"%s\" %s /><div class=\"clear\"></div></li>", $label, $k, $k, $loading, $disable);
+								echo "<li class=\"clearfix\"><span class=\"label\">".$label."</span> <input class=\"field-".$k."\" type=\"text\" name=\"field[".$k."]\" value=\"".$loading."\" ".$disable." /><div class=\"clear\"></div></li>";
 							}//Close else
 						}//Close foreach
 					}//Close if for  check fields settings
@@ -526,7 +530,7 @@ class Advanced_Cf7_Db_Admin {
 									$label = esc_html($field_settings[$k]['label']);
 									$loading = __('Loading...');
 									//Display Text box design here
-									echo sprintf("<li><span class=\"label\">%s</span> <input class=\"field-%s\" type=\"text\" name=\"field[%s]\" value=\"%s\" %s /></li>", $label, $k, $k, $loading, $disable);
+									echo "<li><span class=\"label\">".$label."</span> <input class=\"field-".$k."\" type=\"text\" name=\"field[".$k."]\" value=\"".$loading."\" ".$disable." /></li>";
 								}
 								unset($fields[$k]);
 							}//Close If for check field name set in field array or not
@@ -553,7 +557,7 @@ class Advanced_Cf7_Db_Admin {
 									$k = esc_html($k);
 									$loading = __('Loading...');
 									//Display Text box design here
-									echo sprintf("<li><span class=\"label\">%s</span> <input class=\"field-%s\" type=\"text\" name=\"field[%s]\" value=\"%s\" %s /></li>", $label, $k, $k, $loading, $disable);
+									echo "<li><span class=\"label\">".$label."</span> <input class=\"field-".$k."\" type=\"text\" name=\"field[".$k."]\" value=\"".$loading."\" ".$disable." /></li>";
 								}
 							}//close foreach
 						}//Close if
@@ -729,6 +733,42 @@ class Advanced_Cf7_Db_Admin {
 					//Get Form ID 
 					$fid = intval($_POST['fid']);
 					
+					// Checking for file type
+					$arr_field_type_info = vsz_field_type_info($fid);
+					
+					//Get form Id related fields information
+					$fields = vsz_cf7_get_db_fields($fid);
+					
+					$del_attach_key = array();
+					foreach ($fields as $k1 => $v1) {
+						if($arr_field_type_info[$k1] == 'file'){
+							$del_attach_key[] = $k1;
+						}
+					}
+					
+					if(!empty($del_attach_key)){
+						$del_attach_key = implode(",",$del_attach_key);
+						$res = $wpdb->get_results("SELECT * FROM ".VSZ_CF7_DATA_ENTRY_TABLE_NAME." WHERE data_id IN($del_id) AND name IN ('".$del_attach_key."')");
+						
+						if(!empty($res)){
+							foreach($res as $obj){
+								$file_url = $obj->value;
+								if(!empty($file_url)){
+									//Get upload dir URL
+									$upload_dir = wp_upload_dir();
+									//Create custom upload folder
+									$cf7d_upload_folder = VSZ_CF7_UPLOAD_FOLDER;
+									$dir_upload = $upload_dir['basedir'] . '/' . $cf7d_upload_folder;
+									
+									$file_path = $dir_upload."/".basename($file_url);
+									if(file_exists($file_path)){
+										$ret = unlink($file_path);
+									}
+								}
+							}
+						}
+					}
+					
 					//Delete form ID related row entries from DB 
 					$wpdb->query("DELETE FROM ".VSZ_CF7_DATA_ENTRY_TABLE_NAME." WHERE data_id IN($del_id)");
 					$wpdb->query("DELETE FROM ".VSZ_CF7_DATA_TABLE_NAME." WHERE id IN($del_id)");
@@ -881,15 +921,31 @@ class Advanced_Cf7_Db_Admin {
 				}
 				update_option("vsz_cf7_capability",'');
 			}
-			
-			
-			
 		}	
 		add_shortcode( 'cf7-db-display-ip',array($this,'cf7_db_vsz_cf7_display_ip'));
 	}
+	
+	// Short code execution related to hide the submit ip
 	function cf7_db_vsz_cf7_display_ip($atts, $content, $name){
+		if(is_multisite()){
+			$arrInfo = shortcode_atts( array( 'site_id' => ''),$atts );
+			$check_id = $arrInfo['site_id'];
+			$current_id = get_current_blog_id();
+			
+			if(!empty($check_id)){
+				if($current_id == $check_id){
+					define('vsz_cf7_display_ip',true);
+				}
+			}
+			else{
+				define('vsz_cf7_display_ip',true);
+			}
+		}
+		else{
+			define('vsz_cf7_display_ip',true);
+		}
 		
-		define('vsz_cf7_display_ip',true);
+		// define('vsz_cf7_display_ip',true);
 	}
 	
 	
@@ -933,7 +989,7 @@ function vsz_cf7_export_to_csv($fid, $ids_export = ''){
 		foreach ($data_sorted as $k => $v){
 			$temp_value = array();
 			foreach ($fields as $k2 => $v2){
-				$temp_value[] = ((isset($v[$k2])) ? remove_smart_quotes(removeAccents(html_entity_decode($v[$k2]))) : '');
+				$temp_value[] = ((isset($v[$k2])) ? html_entity_decode($v[$k2]) : '');
 			}
 			fputcsv($fp, $temp_value);
 		}
@@ -945,7 +1001,7 @@ function vsz_cf7_export_to_csv($fid, $ids_export = ''){
 //Generate excel file here
 function vsz_cf7_export_to_excel($fid, $ids_export){
 	
-	 global $wpdb;
+	global $wpdb;
 	
 	$fid = intval($fid);
     $fields = vsz_cf7_get_db_fields($fid);
@@ -963,50 +1019,53 @@ function vsz_cf7_export_to_excel($fid, $ids_export){
 		
 		$arrHeader = array_values(array_map('sanitize_text_field',$fields));
 		
-		//Check that the class exists before trying to use it
-		if(!class_exists('Excel')){
-			//Include excel class file 
-			require_once(dirname(__FILE__).'/class/Excel.class.php');
-			//create excel class object
-			$xls = new Excel($form_title);
-			
-			//First we will set header in excel file
-			$i=0;
-			foreach($arrHeader as $colName){
-				//Set column index in file
-				$xls->home($i);
-				//Set column name in file 
-				$xls->label($colName);
-				$i++;
-			}
-			
-			foreach ($data_sorted as $k => $v){
-				//Define column index here 
-				$i=0;	
-				//Consider new row for each entry here 
-				$xls->down();
-				//Get column order wise value here 
-				foreach ($fields as $k2 => $v2){
-					$colVal = ((isset($v[$k2])) ? html_entity_decode($v[$k2]) : '');
-					//Set column index here 
-					$xls->home($i);
-					//Set Column value here 
-					$xls->label(remove_smart_quotes(removeAccents($colVal)));
-					//Conider new column here 
-					$i++;
-				}
-			}
-			
-			//Download excel file here 
-			$xls->send();
-			exit;
+	
+		//Include excel class file 
+		require_once(dirname(__FILE__).'/class/PHPExcel.php');
+		//create excel class object
+		$xls = new PHPExcel();
+		
+		//First we will set header in excel file
+		$col = 0;
+		$row = 1;
+		foreach($arrHeader as $colName){
+			$cell = $xls->getCellNo($row, $col);
+			$xls->setActiveSheetIndex(0)->setCellValue($cell,$colName);
+			$col++;
 		}
 		
+		$row = 2;
+		foreach ($data_sorted as $k => $v){
+			//Define column index here 
+			$col=0;	
+			
+			//Get column order wise value here 
+			foreach ($fields as $k2 => $v2){
+				$colVal = (isset($v[$k2]) ? html_entity_decode($v[$k2]) : '');
+				$cell = $xls->getCellNo($row, $col);
+				$xls->setActiveSheetIndex(0)->setCellValue($cell,$colVal);
+				$col++;
+			}
+			//Consider new row for each entry here 
+			$row++;
+		}
+		
+		
+		// Set active sheet index to the first sheet, so Excel opens this as the first sheet
+		$xls->setActiveSheetIndex(0);
+		
+		// Safely output the header first and set the fileName also
+		$xls->headers($form_title);
+		
+		//Download excel file here 
+		$objWriter = PHPExcel_IOFactory::createWriter($xls, 'Excel5');
+		$objWriter->save('php://output');
+		exit;
 	}
 }
 //Generate pdf file here
 function vsz_cf7_export_to_pdf($fid, $ids_export){
-	 global $wpdb;
+	global $wpdb;
 	$fid = intval($fid);
 	$fields = vsz_cf7_get_db_fields($fid);
 	
@@ -1026,38 +1085,23 @@ function vsz_cf7_export_to_pdf($fid, $ids_export){
 		//Check that the class exists before trying to use it
 		if(!class_exists('MYPDF')){
 			//Include pdf class file 
-			require_once(dirname(__FILE__).'/pdfgenerate/mypdf.class.php');
-			$pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, false, 'UTF-8', false);
-
-			// set document information
-			$pdf->SetCreator(PDF_CREATOR);
-
-			// set header and footer fonts
-			$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
-			$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
-
-			//set margins
-			$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP + 2, PDF_MARGIN_RIGHT);
-			$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-			$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
-
-			$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM + 10);
-
-			//set image scale factor
-			$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
-
-			//set some language-dependent strings
-			$pdf->setLanguageArray($l);
-
-			// set font
-			$pdf->SetFont('helvetica', '', 8);
-
+			// require_once(dirname(__FILE__).'/pdfgenerate/mypdf.class.php');
+			
+			require_once(dirname(__FILE__).'/pdfgenerate/dompdf/autoload.inc.php');
+			require_once(dirname(__FILE__).'/pdfgenerate/dompdf/load_font.php');
+			
+			// $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, false, 'UTF-8', false);
+			
+			$pdf = new Dompdf\Dompdf();
+			$pdf->set_option('defaultFont', 'helvetica');
+			$pdf->setPaper('A4', 'landscape');
 			// add a page
-			$pdf->AddPage();
+			
 			$docName ="";
 			$timeStamp = date('Ymdhis');
 			$form_title = preg_replace('/\s+/', '_', $form_title);
 			$docName = $form_title."-".$timeStamp;
+			
 			// pdf html content
 			$content = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 						"http://www.w3.org/TR/html4/loose.dtd">
@@ -1069,9 +1113,14 @@ function vsz_cf7_export_to_pdf($fid, $ids_export){
 						<body><style>table, th, td {
 							border: 1px solid #ddd;
 							border-collapse: collapse;
+							table-layout:fixed;
+							width:100%;
+							white-space: normal;
+							word-wrap: break-word;
+							font-family: DroidSansFallback;
 						}
 						td{
-						padding:5px;
+							padding:5px;
 						}
 						</style>';
 			$content.= '<div style="text-align:center;font-size:18px;margin:20px;line-height:30px;">'.$form_title.'</div>';
@@ -1088,26 +1137,21 @@ function vsz_cf7_export_to_pdf($fid, $ids_export){
 				$content .= '<tr>';
 				//Define column index here 
 				$i=0;	
-				//Consider new row for each entry here 
+				//Consider new row for each entry here
 				
 				//Get column order wise value here 
 				foreach ($fields as $k2 => $v2){
 					$colVal = ((isset($v[$k2])) ? html_entity_decode($v[$k2]) : '');
-					$content .= '<td style="padding:5px;line-height:20px;" CELLSPACING=10>'.remove_smart_quotes(removeAccents($colVal)).'</td>';
+					$content .= '<td style="padding:5px;line-height:20px;" CELLSPACING=10>'.htmlentities(stripslashes($colVal)).'</td>';
 				}
 				$content .= '</tr>';
+				
 			}
 			
 				
 			$content.='</table></body></html>';
-		
+			
 			// *******************************************************************
-			
-			$pdf->lastPage();
-			
-			
-			$pdf->writeHTML($content, true, false, true, false, '');
-
 			//Close and output PDF document
 			
 			$upload_dir = wp_upload_dir();
@@ -1119,8 +1163,10 @@ function vsz_cf7_export_to_pdf($fid, $ids_export){
 			$readFilePath = $folderPath.$fileFullName;
 			
 			//$filePath = $folderPath;
-			
-			$pdf->Output($folderPath . $docName . '.pdf', 'F');
+			$pdf->loadHtml($content);
+			$pdf->render();
+			$pdf->stream($readFilePath);
+			// $pdf->Output($folderPath . $docName . '.pdf', 'F');
 			 if(file_exists($readFilePath)){
 				header('Content-Type: application/pdf');
 				header('Content-Disposition: attachment; filename="'.$docName.'.pdf"' );
@@ -1129,9 +1175,9 @@ function vsz_cf7_export_to_pdf($fid, $ids_export){
 				unlink($readFilePath);
 				exit;
 			}
-			
 		}
 	}
+	
 }
 
 //Setup export related query here
@@ -1155,11 +1201,11 @@ function create_export_query($fid,$ids_export,$cf7d_entry_order_by){
 	if(isset($_POST['search_cf7_value']) && !empty($_POST['search_cf7_value']) && isset($_POST['start_date']) && isset($_POST['end_date']) && empty($_POST['start_date']) && empty($_POST['end_date'])){
 		
 		$search = sanitize_text_field($_POST['search_cf7_value']);
-		$query = sprintf("SELECT * FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME.
-						"` WHERE `cf7_id` = %d AND data_id IN(SELECT * FROM (SELECT data_id FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` 
+		$query = "SELECT * FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME.
+						"` WHERE `cf7_id` = ".$fid." AND data_id IN(SELECT * FROM (SELECT data_id FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` 
 						WHERE 1 = 1 AND `cf7_id` = ".$fid." ".((!empty($search)) ? "AND `value` LIKE '%%".$search."%%'" : "").' '.
 						((!empty($ids_export)) ? " AND data_id IN(".$ids_export.")" : '').
-						"  GROUP BY `data_id` ORDER BY ".$cf7d_entry_order_by." ) temp_table) ORDER BY " . $cf7d_entry_order_by, $fid );
+						"  GROUP BY `data_id` ORDER BY ".$cf7d_entry_order_by." ) temp_table) ORDER BY " . $cf7d_entry_order_by;
 	}
 	//Check date wise filter active or not
 	else if(isset($_POST['search_cf7_value']) && empty($_POST['search_cf7_value']) && isset($_POST['start_date']) && isset($_POST['end_date']) && !empty($_POST['start_date']) && !empty($_POST['end_date']) && $s_date !== false && $e_date !== false){
@@ -1172,7 +1218,13 @@ function create_export_query($fid,$ids_export,$cf7d_entry_order_by){
 		
 		$search_date_query = "AND `name` = 'submit_time' AND value between '".$start_date."' and '".$end_date." 23:59:59'";
 		
-		$query = sprintf("SELECT * FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE `cf7_id` = %d AND data_id IN(SELECT * FROM (SELECT data_id FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE 1 = 1 AND `cf7_id` = ".$fid." ".$search_date_query.' '. ((!empty($ids_export)) ? " AND data_id IN(".$ids_export.")" : '')."  GROUP BY `data_id` ORDER BY ".$cf7d_entry_order_by.") temp_table) ORDER BY " . $cf7d_entry_order_by, $fid);
+		$query = "SELECT * FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE `cf7_id` = ".$fid." AND data_id IN(
+					SELECT * FROM (
+						SELECT data_id FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE 1 = 1 AND `cf7_id` = ".$fid." ".$search_date_query.' '. ((!empty($ids_export)) ? " AND data_id IN(".$ids_export.")" : '')."  
+							GROUP BY `data_id` ORDER BY ".$cf7d_entry_order_by."
+						) 
+					temp_table) 
+					ORDER BY " . $cf7d_entry_order_by;
 	}
 	//Check search and date wise filter active or not
 	else if(isset($_POST['search_cf7_value']) && !empty($_POST['search_cf7_value']) && isset($_POST['start_date']) && isset($_POST['end_date']) && !empty($_POST['start_date']) && !empty($_POST['end_date']) && $s_date !== false && $e_date !== false){
@@ -1185,7 +1237,8 @@ function create_export_query($fid,$ids_export,$cf7d_entry_order_by){
 		//Get end date information
 		$end_date =  date_format($e_date,"Y-m-d").' 23:59:59';
 		
-		$date_query = sprintf("SELECT data_id FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE 1 = 1 AND `cf7_id` = %d AND `name` = 'submit_time' AND value between '%s' and '%s' GROUP BY `data_id` ORDER BY `data_id` DESC",$fid, $start_date, $end_date);
+		$date_query = "SELECT data_id FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE 1 = 1 AND `cf7_id` = ".$fid." AND `name` = 'submit_time' AND 
+						value between '".$start_date."' and '".$end_date."' GROUP BY `data_id` ORDER BY `data_id` DESC";
 		
 		//print $date_query;
 		$rs_date = $wpdb->get_results($date_query);
@@ -1205,13 +1258,26 @@ function create_export_query($fid,$ids_export,$cf7d_entry_order_by){
 			$data_ids = rtrim($data_ids,',');
 		}
 		$search_date_query = "";
-		$query = sprintf("SELECT * FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE `cf7_id` = %d AND data_id IN(SELECT * FROM (SELECT data_id FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE 1 = 1 AND `cf7_id` = ".$fid." ".$search_date_query." ".((!empty($search)) ? "AND `value` LIKE '%%".$search."%%'" : ""). " AND data_id IN (".$data_ids.") GROUP BY `data_id` ORDER BY ".$cf7d_entry_order_by." ) temp_table) ORDER BY " . $cf7d_entry_order_by, $fid); 
+		$query = "SELECT * FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE `cf7_id` = ".$fid." AND data_id IN(
+					SELECT * FROM (
+						SELECT data_id FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE 1 = 1 AND `cf7_id` = ".$fid." ".$search_date_query." ".((!empty($search)) ? "
+							AND `value` LIKE '%%".$search."%%'" : ""). " AND data_id IN (".$data_ids.") 
+							GROUP BY `data_id` ORDER BY ".$cf7d_entry_order_by." 
+						) 
+					temp_table) 
+					ORDER BY " . $cf7d_entry_order_by; 
 		
 	}
 	//Not active any filter on listing screen
 	else{
 		
-		$query = sprintf("SELECT * FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE `cf7_id` = %d AND data_id IN(SELECT * FROM (SELECT data_id FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE 1 = 1 AND `cf7_id` = ".$fid.' '. ((!empty($ids_export)) ? " AND data_id IN(".$ids_export.")" : '')." GROUP BY `data_id` ORDER BY ".$cf7d_entry_order_by." ) temp_table) ORDER BY " . $cf7d_entry_order_by, $fid);
+		$query = "SELECT * FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE `cf7_id` = ".$fid." AND data_id IN(
+					SELECT * FROM (
+						SELECT data_id FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE 1 = 1 AND `cf7_id` = ".$fid.' '. ((!empty($ids_export)) ? " AND data_id IN(".$ids_export.")" : '')." 
+							GROUP BY `data_id` ORDER BY ".$cf7d_entry_order_by." 
+						) 
+					temp_table) 
+					ORDER BY " . $cf7d_entry_order_by;
 	}
 	
 	//Execuste query

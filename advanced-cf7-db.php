@@ -9,7 +9,7 @@
  * Plugin Name:       Advanced CF7 DB
  * Plugin URI:        https://wordpress.org/plugins/advanced-cf7-db/
  * Description:       Save all contact form 7 submitted data to the database, View, Export, ordering, Change field labels, Import data using CSV very easily.
- * Version:           1.4.1
+ * Version:           1.4.2
  * Author:            Vsourz Digital
  * Author URI:        https://www.vsourz.com
  * License:           GPL-2.0+
@@ -23,7 +23,7 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 global $vsz_cf7db_current_version;
-$vsz_cf7db_current_version = '1.4.1';
+$vsz_cf7db_current_version = '1.4.2';
 /**
  * Defining all the table names and setting their prefix here
  */ 
@@ -105,16 +105,14 @@ if(!function_exists("removeAccents")){
  
 if(!function_exists("remove_smart_quotes")){
 	function remove_smart_quotes($content) {
+		$content= str_replace(
+		array("\xe2\x80\x98", "\xe2\x80\x99", "\xe2\x80\x9c", "\xe2\x80\x9d", "\xe2\x80\x93", "\xe2\x80\x94", "\xe2\x80\xa6"),
+		array("'", "'", '"', '"', '-', '--', '...'), $content);
 
-	$content= str_replace(
-	array("\xe2\x80\x98", "\xe2\x80\x99", "\xe2\x80\x9c", "\xe2\x80\x9d", "\xe2\x80\x93", "\xe2\x80\x94", "\xe2\x80\xa6"),
-	array("'", "'", '"', '"', '-', '--', '...'), $content);
+		$content= str_replace(
+		array(chr(145), chr(146), chr(147), chr(148), chr(150), chr(151), chr(133)),
+		array("'", "'", '"', '"', '-', '--', '...'), $content);
 
-	$content= str_replace(
-	array(chr(145), chr(146), chr(147), chr(148), chr(150), chr(151), chr(133)),
-	array("'", "'", '"', '"', '-', '--', '...'), $content);
-
-	return $content;
-
+		return $content;
 	}
 }

@@ -566,9 +566,12 @@ h3.advanced {
 }
 @media(max-width:782px){
 	.cf7d-admin-table tr:not(.inline-edit-row):not(.no-items) td:not(.check-column) {
-	display:table-cell;
-	word-wrap: break-word;
-}
+		display:table-cell;
+		word-wrap: break-word;
+	}
+	#cf7d-modal-footer, .cf7d-modal-footer{
+		position: fixed;
+	}
 }
 @media(max-width:520px){
 .from-to-date-search .input-cf-date {
