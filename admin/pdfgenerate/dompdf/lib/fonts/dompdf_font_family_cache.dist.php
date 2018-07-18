@@ -84,19 +84,6 @@ return array(
             'bold_italic' => $distFontDir . 'DejaVuSansMono-BoldOblique',
             'italic' => $distFontDir . 'DejaVuSansMono-Oblique',
             'normal' => $distFontDir . 'DejaVuSansMono'
-        ),
-    'wt002-webfont' =>
-        array(
-            'bold' => $distFontDir . 'wt002-webfont',
-            'bold_italic' => $distFontDir . 'wt002-webfont',
-            'italic' => $distFontDir . 'wt002-webfont',
-            'normal' => $distFontDir . 'wt002-webfont'
-        ),
-	'DroidSansFallback' =>
-        array(
-            'bold' => $distFontDir . 'DroidSansFallback',
-            'bold_italic' => $distFontDir . 'DroidSansFallback',
-            'italic' => $distFontDir . 'DroidSansFallback',
-            'normal' => $distFontDir . 'DroidSansFallback'
         )
+
 );
