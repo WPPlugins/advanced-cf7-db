@@ -10,22 +10,38 @@ add_action('wpcf7_before_send_mail','vsz_cf7_before_send_email');
 //Call this function when mail is trigger then get all form fields related information
 function vsz_cf7_before_send_email($contact_form){
 	global $wpdb;
-
+	$contact_form_ids = array();
 	//Define this action for customize form data before insert in DB
 	do_action('vsz_cf7_before_insert_db', $contact_form);
 
 	//Get submitted contact form id
 	$cf7_id = $contact_form->id();
+
+	/*
+	 * Restriction of the whole form submission to the database
+	 * Filter provided to get all the un-necessary form data to be submitted
+	 */
+
+	$arr_contact_form_ids = (array) apply_filters('vsz_cf7_unwanted_form_data_submission', $contact_form_ids);
+
+	if(!empty($arr_contact_form_ids) && is_array($arr_contact_form_ids) && in_array($cf7_id, $arr_contact_form_ids)) return;
+	
 	$contact_form = vsz_cf7_get_posted_data($contact_form);
 
 	//for database installion
     $contact_form = vsz_cf7_add_extra_fields($contact_form);
 
-	 //Modify $contact_form
-    $contact_form = apply_filters('vsz_cf7_modify_form_before_insert_data', $contact_form);
+	$contact_form = apply_filters('vsz_cf7_modify_form_before_insert_data', $contact_form);
 
 	//Type's $contact_form->posted_data is array
 	// Define filter for customize posted data
+	/* Below filter will be provided to the Users to modify the data
+	 * Below is the process that can be performed
+	 * 1) Add new data to the CF7 Form
+	 * 2) Can modify the existing form submitted data
+	 * 3) Can unset or remove the existing form data of CF7
+	 *
+	 */
 
     $contact_form->posted_data = apply_filters('vsz_cf7_posted_data', $contact_form->posted_data);
 
@@ -90,7 +106,7 @@ function vsz_cf7_add_extra_fields($cf7){
 
     //Get time stamp value in valid date format
     $cf7->posted_data['submit_time'] = date_i18n('Y-m-d H:i:s', $submission->get_meta('timestamp'));
-	
+
 	if(!defined('vsz_cf7_display_ip')){
 		//Get submitted ip address
 		$cf7->posted_data['submit_ip'] = (isset($_SERVER['X_FORWARDED_FOR'])) ? $_SERVER['X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR'];
@@ -143,6 +159,7 @@ function vsz_cf7_get_the_form_list($fid = ''){
 	$forms = WPCF7_ContactForm::find();
 	$form = array();
 	//fetch each form information
+
 	foreach ($forms as $k => $v){
 		//Check if form id not empty then get specific form related information
 		if(!empty($fid)){
@@ -155,8 +172,22 @@ function vsz_cf7_get_the_form_list($fid = ''){
 			$form[] = $v;
 		}
     }
+    // New function Added to sort the array by CF7 Name
+    usort($form, "cmp_sort_form_name");
+
 	return $form;
 }//Close function
+/*
+ * Sorting the contact forms to asc order by CF7 name
+ */
+function cmp_sort_form_name($a, $b)
+{
+    //return $a->name > $b->name;
+    return strcmp($a->name(), $b->name());
+
+}
+
+
 
 /*
  * $data: rows from database
@@ -185,7 +216,7 @@ function vsz_cf7_get_db_fields($fid, $filter = true){
 	//Set each field value in array
     $fields = array();
 	if(!empty($data)){
-		
+
 		foreach ($data as $k => $v) {
 			if(defined('vsz_cf7_display_ip')){
 				if($v->name != 'submit_ip'){
@@ -197,13 +228,13 @@ function vsz_cf7_get_db_fields($fid, $filter = true){
 			}
 		}
 	}
-	
+
 	//Check if filter is true or not
     if ($filter) {
 		//Get all fields information as per Setting screen
         $fields = apply_filters('vsz_cf7_admin_fields', $fields, $fid);
     }
-	
+
     return $fields;
 }//Close function
 
@@ -277,7 +308,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		}
 		$loading = __('Loading...');
 		echo "<li class=\"clearfix\">
-				<span class=\"label\">".$label." (".$type.")</span> 
+				<span class=\"label\">".$label." (".$type.")</span>
 				<textarea name=\"field[".$k."]\" rows=\"3\" cols=\"20\" class=\"field-".$k."\" >".$loading."</textarea>
 				<span class=\"margin_left\">(Multiple entry start from new line)</span>
 				<div class=\"clear\"></div>
@@ -293,7 +324,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		}
 		$loading = __('Loading...');
 		echo "<li class=\"clearfix\">
-				<span class=\"label\">".$label." (".$type.")</span> 
+				<span class=\"label\">".$label." (".$type.")</span>
 				<textarea name=\"field[".$k."]\" rows=\"3\" cols=\"20\" class=\"field-".$k."\" >".$loading."</textarea><div class=\"clear\"></div></li>";
 	}
 	else if($type == 'select'){
@@ -305,7 +336,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		}
 		$loading = __('Loading...');
 		echo "<li class=\"clearfix\">
-				<span class=\"label\">".$label." (".$type.")</span> 
+				<span class=\"label\">".$label." (".$type.")</span>
 				<textarea name=\"field[".$k."]\" rows=\"3\" cols=\"20\" class=\"field-".$k."\" >".$loading."</textarea><div class=\"clear\"></div></li>";
 	}
 	else if($type == 'textarea'){
@@ -317,7 +348,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		}
 		$loading = __('Loading...');
 		echo "<li class=\"clearfix\">
-				<span class=\"label\">".$label."</span> 
+				<span class=\"label\">".$label."</span>
 				<textarea name=\"field[".$k."]\" rows=\"3\" cols=\"20\" class=\"field-".$k."\" >".$loading."</textarea><div class=\"clear\"></div></li>";
 	}
 	else if($type == 'file'){
@@ -330,7 +361,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		$loading = __('Loading...');
 		$disable = 'readonly';
 		echo "<li class=\"clearfix\">
-				<span class=\"label\">".$label."</span> 
+				<span class=\"label\">".$label."</span>
 				<input class=\"field-".$k."\" type=\"text\" name=\"field[".$k."]\" value=\"".$loading."\" ".$disable." /><div class=\"clear\"></div></li>";
 	}else if($type == 'tel'){
 
@@ -353,7 +384,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		}
 		$loading = __('Loading...');
 		echo "<li class=\"clearfix\">
-				<span class=\"label\">".$label."</span> 
+				<span class=\"label\">".$label."</span>
 				<input class=\"field-".$k."\" type=\"text\" name=\"field[".$k."]\" value=\"".$loading."\" /><div class=\"clear\"></div></li>";
 	}else{
 		if(is_array($v)){

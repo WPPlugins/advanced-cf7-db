@@ -196,7 +196,12 @@ class Advanced_Cf7_Db_Admin {
 			$obj_form = vsz_cf7_get_the_form_list($fid);
 
 			//get pre define form fields information
-			$arr_form_tag = $obj_form[0]->scan_form_tags();
+			if(isset($obj_form[0])){
+				$arr_form_tag = $obj_form[0]->scan_form_tags();
+			}
+			else{
+				$arr_form_tag = array();
+			}
 
 			/**** This functionality Added because when field settings not define then
 				Fields display as per form design format*/
@@ -960,6 +965,103 @@ class Advanced_Cf7_Db_Admin {
 		$role->add_cap('cf7_db_form_view'.$post_id);
 		$role->add_cap('cf7_db_form_edit_'.$post_id);
 	}
+
+	// Function to upload file from edit file popup
+	function vsz_acf7_db_edit_scr_file_upload(){
+
+		if(!isset($_POST["fid"]) || empty($_POST["fid"])){
+			print 'error';
+			exit;
+		}
+		if(!isset($_POST["rid"]) || empty($_POST["rid"])){
+			print 'error';
+			exit;
+		}
+		if(!isset($_POST["field"]) || empty($_POST["field"])){
+			print 'error';
+			exit;
+		}
+
+		global $wpdb;
+		$fid = $_POST["fid"];
+		$rid = $_POST["rid"];
+		$field = $_POST["field"];
+
+		$upload_dir = wp_upload_dir();
+		$acf7db_upload_folder = VSZ_CF7_UPLOAD_FOLDER;
+		$temp_dir_upload = $upload_dir['basedir'].'/'.$acf7db_upload_folder;
+		wp_mkdir_p($temp_dir_upload);
+
+		if(is_array($_FILES) && !empty($_FILES)){
+			$maxsize = 8000000;
+			if(($_FILES['image']['size'] >= $maxsize)) {
+				echo  'invalid_size';
+				exit;
+			}
+			$filename = sanitize_text_field($_FILES["image"]["name"]);
+			$file_basename = substr($filename, 0, strripos($filename, '.')); // get file name
+			$file_ext = substr($filename, strripos($filename, '.')); // get file extention
+			//unique file name
+			$newfilename = wp_unique_filename($temp_dir_upload, $file_basename.$file_ext);
+
+			if(move_uploaded_file($_FILES["image"]["tmp_name"], $temp_dir_upload. '/' .$newfilename)){
+				$file_url = $upload_dir['baseurl'] . '/' . $acf7db_upload_folder.'/'.$newfilename;
+
+				$res = $wpdb->update(VSZ_CF7_DATA_ENTRY_TABLE_NAME, array("value" => $file_url), array("data_id" => $rid, "cf7_id" => $fid, "name" => $field));
+				if($res !== false){
+					echo "$newfilename~~@@~~&&~~$file_url";
+					wp_die();
+				}
+				else{
+					echo "n";
+					wp_die();
+				}
+			}
+		}
+		wp_die();
+	}
+
+	// Function to delete file from edit file popup
+	function vsz_acf7_db_edit_scr_file_delete(){
+
+		if(!isset($_POST["fid"]) || empty($_POST["fid"])){
+			print 'error';
+			exit;
+		}
+		if(!isset($_POST["rid"]) || empty($_POST["rid"])){
+			print 'error';
+			exit;
+		}
+		if(!isset($_POST["field"]) || empty($_POST["field"])){
+			print 'error';
+			exit;
+		}
+		if(!isset($_POST["val"]) || empty($_POST["val"])){
+			print 'error';
+			exit;
+		}
+
+		$fid = $_POST["fid"];
+		$rid = $_POST["rid"];
+		$field = $_POST["field"];
+		$val = $_POST["val"];
+		global $wpdb;
+
+		$res = $wpdb->update(VSZ_CF7_DATA_ENTRY_TABLE_NAME, array("value" => ""), array("data_id" => $rid, "cf7_id" => $fid, "name" => $field));
+		if($res !== false){
+			$upload_dir = wp_upload_dir();
+			$dir_upload = $upload_dir['basedir'] .'/' .VSZ_CF7_UPLOAD_FOLDER;
+
+			unlink($dir_upload.'/'.$val);
+			echo "y";
+			wp_die();
+		}
+		else{
+			echo "n";
+			wp_die();
+		}
+	}
+
 }//close class
 
 //Generate CSV file here
@@ -1005,6 +1107,7 @@ function vsz_cf7_export_to_excel($fid, $ids_export){
 
 	$fid = intval($fid);
     $fields = vsz_cf7_get_db_fields($fid);
+    $fields1 = vsz_field_type_info($fid);
 
 	//Get form id related contact form object
 	$obj_form = vsz_cf7_get_the_form_list($fid);
@@ -1088,7 +1191,7 @@ function vsz_cf7_export_to_pdf($fid, $ids_export){
 			// require_once(dirname(__FILE__).'/pdfgenerate/mypdf.class.php');
 
 			require_once(dirname(__FILE__).'/pdfgenerate/dompdf/autoload.inc.php');
-			require_once(dirname(__FILE__).'/pdfgenerate/dompdf/load_font.php');
+			//require_once(dirname(__FILE__).'/pdfgenerate/dompdf/load_font.php');
 
 			// $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, false, 'UTF-8', false);
 
@@ -1117,6 +1220,7 @@ function vsz_cf7_export_to_pdf($fid, $ids_export){
 							width:100%;
 							white-space: normal;
 							word-wrap: break-word;
+							font-family: DroidSansFallback;
 						}
 						td{
 							padding:5px;

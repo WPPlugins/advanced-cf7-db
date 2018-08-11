@@ -210,7 +210,11 @@ class Advanced_Cf7_Db {
 		// Provide custom capability
 		$this->loader->add_action('save_post',$plugin_admin,'vsz_cf7_create_role_for_contact_form');
 		
+		// Edit Popup file upload
+		$this->loader->add_action('wp_ajax_acf7_db_edit_scr_file_upload',$plugin_admin,'vsz_acf7_db_edit_scr_file_upload');
 		
+		// Edit Popup file delete
+		$this->loader->add_action('wp_ajax_acf7_db_edit_scr_file_delete',$plugin_admin,'vsz_acf7_db_edit_scr_file_delete');
 	}
 
 	/**
