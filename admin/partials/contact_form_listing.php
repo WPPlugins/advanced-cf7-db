@@ -298,7 +298,7 @@ else{
 		//Form listing design structure start here
 		?><div class="wrap our-class">
 			<form class="vsz-cf7-listing row" action="<?php print esc_url($url);?>" method="post" id="cf7d-admin-action-frm" >
-				<input type="hidden" name="page" value="cf7-data">
+				<input type="hidden" name="page" value="contact-form-listing">
 				<input type="hidden" name="fid" value="<?php echo $fid; ?>">
 				<input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce('vsz-cf7-action-nonce'); ?>"><?php
 					//Display setting screen button
