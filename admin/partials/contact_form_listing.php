@@ -240,14 +240,17 @@ else{
 		//Call when any filter not active on Listing screen
 		else{
 			
-			if(isset($_GET["orderby"]) && isset($_GET["order"]) && !empty($_GET["orderby"]) && !empty($_GET["order"])){
-				$qry = "SELECT `data_id` FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE `cf7_id` = ".$fid." AND `name` = '".$_GET['orderby']."' AND data_id IN(
+			if(isset($_GET["orderby"]) && isset($_GET["order"]) && !empty($_GET["orderby"]) && !empty($_GET["order"]) && (strtolower($_GET["order"]) == 'asc' || strtolower($_GET["order"]) == 'desc')){
+				
+				$order = esc_sql($_GET['order']);
+				$orderby = esc_sql($_GET['orderby']);
+				$qry = "SELECT `data_id` FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE `cf7_id` = ".$fid." AND `name` = '".$orderby."' AND data_id IN(
 										SELECT * FROM (
 											SELECT data_id FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE 1 = 1 AND `cf7_id` = ".$fid." 
 											GROUP BY `data_id` ORDER BY ".$cf7d_entry_order_by." LIMIT ".$offset.",".$items_per_page."
 										) 
 										temp_table) 
-										ORDER BY `value` ".$_GET["order"]."," . $cf7d_entry_order_by;
+										ORDER BY `value` ".$order."," . $cf7d_entry_order_by;
 				$idVals = $wpdb->get_results ( $qry );
 				$id_val = array();
 				if(!empty($idVals)){

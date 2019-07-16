@@ -2,8 +2,8 @@
 Contributors: vsourz1td
 Tags: contact form 7 db, advanced cf7 db, contact form 7 database, contact form db, contact form 7, save form data, save contact form, save cf7, database, cf7db, save-contact-form, Save-Forms-Data, import-cf7, export-contact-data, view-cf7-entry
 Requires at least: 4.0
-Tested up to: 5.1.1
-Stable tag: 1.6.1
+Tested up to: 5.2.2
+Stable tag: 1.6.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -175,11 +175,14 @@ return $contact_form_ids;
 
 == Changelog ==
 
+= 1.6.2 =
+* We have fixed SQL injection related bugs at the back office query.
+
 = 1.6.1 =
 * We have upgraded with Security patched for shortcode.
 
 = 1.6.0 =
-* We have upgraded with Security patched to securing user's uploaded data which managed on advanced-cf7-upload directory..
+* We have upgraded with Security patched to securing user's uploaded data which managed on advanced-cf7-upload directory.
 
 = 1.5.1 =
 * Minor bug fixing related to variable mismatch for wordpress 5.0.1.
