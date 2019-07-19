@@ -826,9 +826,50 @@ class Advanced_Cf7_Db_Admin {
 	}//Close admin_init hook function
 
 	//Edit form AJAX call hadle By this function
+	/**
+	 * Change log : 18-07-2019
+	 * Taken by : @Jaydeep
+	 * Summary : Added user access checks for the edit case to be handled.
+	 */
 	public function vsz_cf7_edit_form_ajax(){
 		//global $cap;
 		//if(!current_user_can( $cap )) return;
+
+		$cap = 'no_access';
+		// Check if user have access than display
+
+		$user_id = get_current_user_id();
+		$subject = new WP_User($user_id);
+		$allcaps= $subject->allcaps;
+		$caps = $subject->caps;
+
+		$caps    = array_merge(wp_get_current_user()->caps, $caps);
+		$allcaps = array_merge(wp_get_current_user()->allcaps, $allcaps);
+		if (wp_get_current_user()->ID == $subject->ID) {
+			wp_get_current_user()->allcaps = $allcaps;
+			wp_get_current_user()->caps    = $caps;
+		}
+		$user = wp_get_current_user();
+
+		//$role = get_role('subscriber');
+		//var_dump($user);exit;
+		if(isset($user) && !empty($user)){
+			foreach($user->allcaps as $key=>$capability){
+				if($capability == true){
+					if(strpos($key, 'cf7_db_form_edit_') !== false){
+						$cap = 'exist';
+
+						break;
+					}
+				}
+			}
+		}
+
+		if($cap == 'no_access' ){
+			echo json_encode('@@You do not have access to edit the data.');
+			exit;
+		}
+
 		global $wpdb;
 		//Check entry id set or not in current request
 		$rid = ((isset($_POST['rid']) && !empty($_POST['rid'])) ? intval($_POST['rid']) : '');
@@ -850,13 +891,13 @@ class Advanced_Cf7_Db_Admin {
 	////Define not editable fields name here
 	public function vsz_cf7_not_editable_fields_callback(){
 		$cf7_not_editable_fields = array('submit_time','submit_ip','submit_user_id');
-		
+
 		if(!empty($non_editable)){
 			foreach($non_editable as $val){
 				$cf7_not_editable_fields[] = $val;
 			}
 		}
-		
+
 		return $cf7_not_editable_fields;
 	}
 
@@ -1476,9 +1517,14 @@ function create_table_cf7_vdata_entry_add_blog(){
 }
 
 // Check user capability
+/**
+ * Change log : 18-07-2019
+ * Taken by : @Jaydeep
+ * Summary : Added the multisite check
+ */
 function cf7_check_capability($user_capability){
 
-	if(is_super_admin()){
+	if(is_super_admin() && is_multisite()){
 		return true;
 	}
 	$user_id = get_current_user_id();

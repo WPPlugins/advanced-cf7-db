@@ -3,7 +3,7 @@ Contributors: vsourz1td
 Tags: contact form 7 db, advanced cf7 db, contact form 7 database, contact form db, contact form 7, save form data, save contact form, save cf7, database, cf7db, save-contact-form, Save-Forms-Data, import-cf7, export-contact-data, view-cf7-entry
 Requires at least: 4.0
 Tested up to: 5.2.2
-Stable tag: 1.6.2
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -174,6 +174,10 @@ return $contact_form_ids;
 
 
 == Changelog ==
+
+= 1.7.0 =
+* We have upgraded with Security patch.
+* Changes related to the premium plugin **User Access Manager** for the edit case to be handled.
 
 = 1.6.2 =
 * We have fixed SQL injection related bugs at the back office query.
