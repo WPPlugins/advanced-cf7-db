@@ -177,6 +177,7 @@ jQuery(document).ready(function($) {
 
 		document.getElementById('overlayLoader').style.display = "block";
 		var rid = parseInt(jQuery(this).data('rid'));
+		var fid = parseInt(jQuery('#cf7_id').val());
 
 		var arr_field_type = jQuery.parseJSON(jQuery('form#cf7d-modal-form-edit-value input[name="arr_field_type"]').val());
 		var arr_option = ['radio','checkbox','select'];
@@ -215,12 +216,15 @@ jQuery(document).ready(function($) {
 		jQuery.ajax({
             url: ajaxurl + '?action=vsz_cf7_edit_form_value',
             type: 'POST',
-            data: {'rid': rid},
+            data: {
+            	 	'rid': rid,
+            	 	'fid': fid
+        		  },
         })
         .done(function(data) {
             //Decode json data here
 			var json = jQuery.parseJSON(data);
-            if(json.indexOf('@@') != -1){
+            if(json.indexOf != undefined && json.indexOf('@@') != -1){
             	alert('You do not have the access to edit the data.');
             	document.getElementById('overlayLoader').style.display = "none";
             	self.parent.tb_remove();
