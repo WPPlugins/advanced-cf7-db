@@ -785,7 +785,7 @@ class Advanced_Cf7_Db_Admin {
 			$current_action = sanitize_text_field($current_action);
 			//Check current action is delete then execute this functionality
 			if($current_action == 'delete'){
-				if(isset($_POST['del_id'])){
+				if(isset($_POST['del_id']) && !empty($_POST['del_id'])){
 					//Get nonce value
 					$nonce = sanitize_text_field($_POST['_wpnonce']);
 					//Verify nonce value
@@ -793,7 +793,7 @@ class Advanced_Cf7_Db_Admin {
 						die('Security check');
 					}
 					//Get Delete row ID information
-					$del_id = implode(',', array_map('intval',sanitize_text_field($_POST['del_id'])));
+					$del_id = implode(',', array_map('intval',$_POST['del_id']));
 					//Get Form ID
 					$fid = intval(sanitize_text_field($_POST['fid']));
 
@@ -805,7 +805,7 @@ class Advanced_Cf7_Db_Admin {
 
 					$del_attach_key = array();
 					foreach ($fields as $k1 => $v1) {
-						if($arr_field_type_info[$k1] == 'file'){
+						if( isset($arr_field_type_info[$k1]) && $arr_field_type_info[$k1] == 'file'){
 							$del_attach_key[] = $k1;
 						}
 					}
