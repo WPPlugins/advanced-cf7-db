@@ -76,7 +76,8 @@ class Advanced_Cf7_Db_Admin {
 		wp_register_style( 'vsz-cf7-db-admin-css', plugin_dir_url( __FILE__ ) . 'css/advanced-cf7-db-admin.css', array(), $this->version, 'all' );
 		wp_enqueue_style( 'font_awesome_css', plugin_dir_url( __FILE__ ) . 'css/font-awesome.css', array(), $this->version, 'all' );
 		wp_register_style( 'jquery-datetimepicker-css', plugin_dir_url( __FILE__ ) . 'css/jquery.datetimepicker.css', array(), $this->version, 'all');
-
+		wp_register_style( 'vsz-cf7-db-mounstride-CRM-css', plugin_dir_url( __FILE__ ) . 'css/mounstride-CRM.css', array(), $this->version, 'all' );
+		wp_register_style( 'mounstride-CRM-css', plugin_dir_url( __FILE__ ) . 'css/mounstride-CRM.css', array(), $this->version, 'all' );
 	}
 
 	/**
@@ -160,6 +161,7 @@ class Advanced_Cf7_Db_Admin {
 		add_submenu_page( 'contact-form-listing', __('Import CSV', 'advanced-cf7-db'), __('Import CSV', ' advanced-cf7-db'), $cap, 'import_cf7_csv',array($this,'vsz_import_cf7_csv') );
 		add_submenu_page( 'contact-form-listing', __('Developer Support', 'advanced-cf7-db'), __('Developer Support', ' advanced-cf7-db'), $cap, 'shortcode',array($this,'vsz_shortcode') );
 		add_submenu_page( 'contact-form-listing', __('Add-ons', 'advanced-cf7-db'), __('Add-ons', ' advanced-cf7-db'), $cap, 'extentions',array($this,'vsz_extension') );
+		add_submenu_page( 'contact-form-listing', __('mounstride CRM', 'advanced-cf7-db'), __('mounstride CRM', ' advanced-cf7-db'), $cap, 'mounstride-CRM',array($this,'vsz_mounstride_CRM') );
 	}
 
 	/**
@@ -197,6 +199,16 @@ class Advanced_Cf7_Db_Admin {
 
 		require_once plugin_dir_path( __FILE__ ) . 'partials/add-ons.php';
 
+	}
+
+	/*
+	mounstride CRM landing page
+	*/
+
+	function vsz_mounstride_CRM(){
+		wp_enqueue_style('vsz-cf7-db-mounstride-CRM-css');
+		
+		require_once plugin_dir_path( __FILE__ ) . 'partials/mounstride-CRM.php';
 	}
 
 	/**
@@ -1260,8 +1272,9 @@ function vsz_cf7_export_to_excel($fid, $ids_export){
 		$col = 0;
 		$row = 1;
 		foreach($arrHeader as $colName){
-			$cell = $xls->getCellNo($row, $col);
-			$xls->setActiveSheetIndex(0)->setCellValue($cell,$colName);
+			// $cell = $xls->getCellNo($row, $col);
+			// $xls->setActiveSheetIndex(0)->setCellValue($cell,$colName);
+			$xls->getActiveSheet()->setCellValueByColumnAndRow($col, $row, $colName);
 			$col++;
 		}
 
@@ -1273,8 +1286,9 @@ function vsz_cf7_export_to_excel($fid, $ids_export){
 			//Get column order wise value here
 			foreach ($fields as $k2 => $v2){
 				$colVal = (isset($v[$k2]) ? html_entity_decode($v[$k2]) : '');
-				$cell = $xls->getCellNo($row, $col);
-				$xls->setActiveSheetIndex(0)->setCellValue($cell,$colVal);
+				// $cell = $xls->getCellNo($row, $col);
+				// $xls->setActiveSheetIndex(0)->setCellValue($cell,$colVal);
+				$xls->getActiveSheet()->setCellValueByColumnAndRow($col, $row, $colVal);
 				$col++;
 			}
 			//Consider new row for each entry here

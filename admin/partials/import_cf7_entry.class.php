@@ -75,6 +75,20 @@ if(isset($_POST['submit']) && isset($_FILES['importFormList']) && !empty($_FILES
 				//Get Header details from CSV sheet
 				$arrHeader = fgetcsv($handle);
 				$header = $arrHeader;
+
+				$temp = array();
+				if(!empty($arrHeader)){
+					foreach ($arrHeader as $key => $value) {
+						if($key == 0){
+							$result = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $value);
+							$temp[] = $result;
+							//For remove u+fffd like � character from first field
+						}else{
+							$temp[] = $value;
+						}
+					}
+				}
+				$arrHeader = $temp; 
 				
 				array_push($header,"Status");
 				//Define option field type array
