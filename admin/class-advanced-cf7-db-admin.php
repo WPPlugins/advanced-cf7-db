@@ -370,12 +370,12 @@ class Advanced_Cf7_Db_Admin {
 	/**
 	 * Display edit link with each entry in table
 	 */
-	function vsz_cf7_admin_after_body_edit_field_func($form_id, $row_id){
+	function vsz_cf7_admin_after_body_edit_field_func($form_id, $row_id,$getDatanonce){
 		//Define thickbox popup function
 		add_thickbox();
 		$row_id = (int)$row_id;
 		?><td>
-			<a data-rid="<?php echo $row_id; ?>" href="#TB_inline?width=600&height=550&inlineId=cf7d-modal-edit-value" id="cf7d-edit-form" class="thickbox cf7d-edit-value" name="Edit Information">
+			<a data-rid="<?php echo $row_id; ?>" data-nonce="<?php print $getDatanonce;?>" href="#TB_inline?width=600&height=550&inlineId=cf7d-modal-edit-value" id="cf7d-edit-form" class="thickbox cf7d-edit-value" name="Edit Information">
 				<i class="fa fa-pencil-square-o" title="Edit" aria-hidden="true" style="font-size:20px;"></i>
 			</a>
 		</td><?php
@@ -725,6 +725,16 @@ class Advanced_Cf7_Db_Admin {
 				// This nonce is not valid.
 				return;
 			}
+			
+			//added in 1.8.3
+			// Checking for the capability
+			$edit_cap = 'cf7_db_form_edit_'.$fid;
+			if(!cf7_check_capability( $edit_cap ) ){
+				//Current user does not have edit access
+				return;
+			}
+			
+			
 			$arr_field_type = '';
 
 			//Get field type information here
@@ -808,7 +818,15 @@ class Advanced_Cf7_Db_Admin {
 					$del_id = implode(',', array_map('intval',$_POST['del_id']));
 					//Get Form ID
 					$fid = intval(sanitize_text_field($_POST['fid']));
-
+					
+					//added in 1.8.3
+					// Checking for the capability
+					$edit_cap = 'cf7_db_form_edit_'.$fid;
+					if(!cf7_check_capability( $edit_cap ) ){
+						//Current user does not have edit access
+						wp_die(__('You do not have permission to delete files.'));
+					}
+					
 					// Checking for file type
 					$arr_field_type_info = vsz_field_type_info($fid);
 
@@ -888,6 +906,7 @@ class Advanced_Cf7_Db_Admin {
 	 * @param $_POST
 	 * rid = recordid
 	 * fid = CF7 formid
+	 * getEntryNonce = nonce value
 	 */
 	public function vsz_cf7_edit_form_ajax(){
 
@@ -895,11 +914,22 @@ class Advanced_Cf7_Db_Admin {
 		//Check entry id set or not in current request
 		$rid = ((isset($_POST['rid']) && !empty($_POST['rid'])) ? intval(sanitize_text_field($_POST['rid'])) : '');
 		$fid = ((isset($_POST['fid']) && !empty($_POST['fid'])) ? intval(sanitize_text_field($_POST['fid'])) : '');
+		//added in 1.8.3
+		$getEntryNonce = ((isset($_POST['getEntryNonce']) && !empty($_POST['getEntryNonce'])) ? sanitize_text_field($_POST['getEntryNonce']) : '');
 
 		if( empty( $rid ) || empty( $fid ) ){
 			echo json_encode('@@You do not have access to edit the data.');
 			exit;
 		}
+		
+		//added in 1.8.3
+		//verify nonce value here
+		if(!wp_verify_nonce($getEntryNonce, 'vsz-cf7-get-entry-nonce-'.$fid)) {
+			echo json_encode('@@You do not have access to edit the data.');
+			exit;
+		}	
+		
+		
 
 		// Checking for the capability
 		$edit_cap = 'cf7_db_form_edit_'.$fid;
@@ -1074,35 +1104,65 @@ class Advanced_Cf7_Db_Admin {
 	// Function to upload file from edit file popup
 	function vsz_acf7_db_edit_scr_file_upload(){
 
-		// Verify the current user can upload files
-		if ( !current_user_can('upload_files') ){
-			print 'Not_accessed_to_upload_file';
-			wp_die(__('You do not have permission to upload files.'));
-		}
-		if(isset($_FILES) && is_array($_FILES) && empty($_FILES)){
-			print 'Not_accessed_to_upload_file';
+		//added in 1.8.3
+		// check nonce
+		if(!isset($_POST['vsz_cf7_edit_nonce']) || empty($_POST['vsz_cf7_edit_nonce'])){
+			print 'error@~@';
+			wp_die(__('Something may be wrong, please try again later.'));
 			exit;
 		}
+		
 		if(!isset($_POST["fid"]) || empty($_POST["fid"])){
-			print 'error';
+			print 'error@~@';
+			wp_die(__('Something may be wrong, please try again later.'));
 			exit;
 		}
+		
+		$fid = (int)sanitize_text_field($_POST["fid"]);
+		
+		//Verify nonce value
+		$nonce = sanitize_text_field($_POST['vsz_cf7_edit_nonce']);
+		if(!wp_verify_nonce( $nonce, 'vsz-cf7-edit-nonce-'.$fid)){
+			print 'error@~@';
+			wp_die(__('Something may be wrong, please try again later.'));
+			exit;
+		}
+		
+		// Verify the current user can upload or delete files
+		//added in 1.8.3
+		// Checking for the capability
+		$edit_cap = 'cf7_db_form_edit_'.$fid;
+		if(!cf7_check_capability( $edit_cap ) ){
+			//Current user does not have edit access
+			print 'error@~@';
+			wp_die(__('You do not have permission to upload files.'));
+			exit;
+		}
+				
+		if(isset($_FILES) && is_array($_FILES) && empty($_FILES)){
+			print 'error@~@';
+			wp_die(__('Something may be wrong, please try again later.'));
+			exit;
+		}
+		
 		if(!isset($_POST["rid"]) || empty($_POST["rid"])){
-			print 'error';
+			print 'error@~@';
+			wp_die(__('Something may be wrong, please try again later.'));
 			exit;
 		}
 		if(!isset($_POST["field"]) || empty($_POST["field"])){
-			print 'error';
+			print 'error@~@';
+			wp_die(__('Something may be wrong, please try again later.'));
 			exit;
 		}
 		$fileInfo = wp_check_filetype(basename($_FILES['image']['name']));
-		if (empty($fileInfo['ext'])) {
-			print 'Invalid_file_type._File_type_not_defined.';
+		if(empty($fileInfo['ext'])){
+			print 'error@~@';
+			wp_die(__('Kindly upload valid file type.'));
 			exit;
 		}
 
 		global $wpdb;
-		$fid = (int)sanitize_text_field($_POST["fid"]);
 		$rid = (int)sanitize_text_field($_POST["rid"]);
 		$field = sanitize_text_field($_POST["field"]);
 
@@ -1112,9 +1172,12 @@ class Advanced_Cf7_Db_Admin {
 		wp_mkdir_p($temp_dir_upload);
 
 		if(is_array($_FILES) && !empty($_FILES)){
+			
+			//verify file size here
 			$maxsize = 8000000;
 			if(($_FILES['image']['size'] >= $maxsize) || empty($_FILES['image']['size'])) {
-				echo  'invalid_size';
+				print 'error@~@';
+				wp_die(__('You can upload maximum 7.60 MB file.'));
 				exit;
 			}
 			$filename = sanitize_text_field($_FILES["image"]["name"]);
@@ -1124,7 +1187,8 @@ class Advanced_Cf7_Db_Admin {
 			$validExtArray = array( 'jpg','jpeg','png','gif','pdf','doc','docx','ppt','pptx','odt','avi','ogg','m4a','mov','mp3','mp4','mpg','wav','wmv');
 			$ext = end((explode(".", $filename)));
 			if(!in_array($ext,$validExtArray)){
-				echo  'invalid_type';
+				print 'error@~@';
+				wp_die(__('Kindly upload valid file type.'));
 				exit;
 			}
 
@@ -1136,12 +1200,15 @@ class Advanced_Cf7_Db_Admin {
 
 				$res = $wpdb->update(VSZ_CF7_DATA_ENTRY_TABLE_NAME, array("value" => $file_url), array("data_id" => $rid, "cf7_id" => $fid, "name" => $field));
 				if($res !== false){
+					print 'success@~@';
 					echo "$newfilename~~@@~~&&~~$file_url";
 					wp_die();
+					exit;
 				}
 				else{
-					echo "n";
-					wp_die();
+					print 'error@~@';
+					wp_die(__('File is not uploaded, kindly try again later.'));
+					exit;
 				}
 			}
 		}
@@ -1154,24 +1221,57 @@ class Advanced_Cf7_Db_Admin {
 	 */
 	function vsz_acf7_db_edit_scr_file_delete(){
 
-		if(!isset($_POST["fid"]) || empty($_POST["fid"])){
-			print 'error';
+		if(!isset($_POST["vsz_cf7_edit_nonce"]) || empty($_POST["vsz_cf7_edit_nonce"])){
+			print 'error@~@';
+			wp_die(__('Something may be wrong, please try again later.'));
 			exit;
 		}
+		
+		if(!isset($_POST["fid"]) || empty($_POST["fid"])){
+			print 'error@~@';
+			wp_die(__('Something may be wrong, please try again later.'));
+			exit;
+		}
+		
+		//get current form id here 
+		$fid = (int)sanitize_text_field($_POST["fid"]);
+		
+		//Verify nonce value
+		////add in 1.8.3
+		$nonce = sanitize_text_field($_POST['vsz_cf7_edit_nonce']);
+		if(!wp_verify_nonce( $nonce, 'vsz-cf7-edit-nonce-'.$fid)){
+			print 'error@~@';
+			wp_die(__('Something may be wrong, please try again later.'));
+			exit; 
+		}
+		// Verify the current user can upload or delete files
+		//added in 1.8.3
+		// Checking for the capability
+		$edit_cap = 'cf7_db_form_edit_'.$fid;
+		if(!cf7_check_capability( $edit_cap ) ){
+			//Current user does not have edit access
+			print 'error@~@';
+			wp_die(__('You do not have permission to delete files.'));
+			exit;
+		}
+		
 		if(!isset($_POST["rid"]) || empty($_POST["rid"])){
-			print 'error';
+			print 'error@~@';
+			wp_die(__('Something may be wrong, please try again later.'));
 			exit;
 		}
 		if(!isset($_POST["field"]) || empty($_POST["field"])){
-			print 'error';
+			print 'error@~@';
+			wp_die(__('Something may be wrong, please try again later.'));
 			exit;
 		}
 		if(!isset($_POST["val"]) || empty($_POST["val"])){
-			print 'error';
+			print 'error@~@';
+			wp_die(__('Something may be wrong, please try again later.'));
 			exit;
 		}
 
-		$fid = (int)sanitize_text_field($_POST["fid"]);
+		
 		$rid = (int)sanitize_text_field($_POST["rid"]);
 		$field = sanitize_text_field($_POST["field"]);
 		$val = sanitize_text_field($_POST["val"]);
@@ -1198,7 +1298,20 @@ class Advanced_Cf7_Db_Admin {
  * Generate CSV file here
  */
 function vsz_cf7_export_to_csv($fid, $ids_export = ''){
-    global $wpdb;
+    
+	global $wpdb;
+	
+	if(!isset($_POST['_wpnonce']) || (isset($_POST['_wpnonce']) && empty($_POST['_wpnonce']))){
+		return 'You do not have the permission to export the data';
+	}
+	
+	//Get nonce value
+	$nonce = sanitize_text_field($_POST['_wpnonce']);
+	//Verify nonce value
+	if(!wp_verify_nonce($nonce, 'vsz-cf7-action-nonce')) {
+		return 'You do not have the permission to export the data';
+	}
+	
 
 	$fid = intval($fid);
     if( empty( $fid ) ){
@@ -1241,6 +1354,18 @@ function vsz_cf7_export_to_csv($fid, $ids_export = ''){
 function vsz_cf7_export_to_excel($fid, $ids_export){
 
 	global $wpdb;
+	
+	if(!isset($_POST['_wpnonce']) || (isset($_POST['_wpnonce']) && empty($_POST['_wpnonce']))){
+		return 'You do not have the permission to export the data';
+	}
+	
+	//Get nonce value
+	$nonce = sanitize_text_field($_POST['_wpnonce']);
+	//Verify nonce value
+	if(!wp_verify_nonce($nonce, 'vsz-cf7-action-nonce')) {
+		return 'You do not have the permission to export the data';
+	}
+	
 
 	$fid = intval($fid);
 	if( empty( $fid ) ){
@@ -1294,9 +1419,6 @@ function vsz_cf7_export_to_excel($fid, $ids_export){
 				$col++;
 				
 			}
-			/* echo '<pre>';
-			var_dump($data_sorted);
-			exit; */
 			//Consider new row for each entry here
 			$row++;
 		}
@@ -1316,7 +1438,20 @@ function vsz_cf7_export_to_excel($fid, $ids_export){
 }
 //Generate pdf file here
 function vsz_cf7_export_to_pdf($fid, $ids_export){
+	
 	global $wpdb;
+	
+	if(!isset($_POST['_wpnonce']) || (isset($_POST['_wpnonce']) && empty($_POST['_wpnonce']))){
+		return 'You do not have the permission to export the data';
+	}
+	
+	//Get nonce value
+	$nonce = sanitize_text_field($_POST['_wpnonce']);
+	//Verify nonce value
+	if(!wp_verify_nonce($nonce, 'vsz-cf7-action-nonce')) {
+		return 'You do not have the permission to export the data';
+	}
+	
 	$fid = intval($fid);
 	if( empty( $fid ) ){
     	return 'You do not have the permission to export the data';

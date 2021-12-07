@@ -419,6 +419,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 function vsz_cf7_import_date_format_callback(){
 
 	$arr_dates = array('Y-m-d H:i:s P' => date('Y-m-d H:i:s P'),
+						'Y-m-d H:i:s' => date('Y-m-d H:i:s'),
 						'Y-m-d' => date('Y-m-d'),
 						'Y/m/d' => date('Y/m/d'),
 						'jS F, Y' => date('jS F, Y'),

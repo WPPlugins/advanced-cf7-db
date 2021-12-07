@@ -297,6 +297,9 @@ else{
 
 		//Add filter for customize bulk action values
 		$entry_actions = apply_filters('vsz_cf7_entry_actions', $entry_actions);
+		
+		//define nonce for get entry details
+		$getDatanonce = wp_create_nonce( 'vsz-cf7-get-entry-nonce-'.$fid );
 
 		//Form listing design structure start here
 		?><div class="wrap our-class">
@@ -385,7 +388,7 @@ else{
 										$row_id = $k;
 										//Display edit entry icon
 										if($edit == true){
-											do_action('vsz_cf7_admin_after_body_field', $fid, $row_id);
+											do_action('vsz_cf7_admin_after_body_field', $fid, $row_id,$getDatanonce);
 										}
 										foreach ($fields as $k2 => $v2) {
 											//Get fields related values

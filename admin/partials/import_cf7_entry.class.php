@@ -9,12 +9,21 @@ if(!is_user_logged_in() || empty($_POST)){
 	die('Try to do un-authorized access!');
 }
 
-
 //Define site global variables
 global $wpdb,$vsz_cf7_csv_upload_error;
 
 // Set Error object for get error during import process
 $vsz_cf7_csv_upload_error = new WP_Error;
+
+// Verify the current user can upload or delete files
+////add in 1.8.3
+if(!current_user_can('upload_files') ){
+	// This nonce is not valid.
+	$msg = 'You do not have permission to import file.';
+	$vsz_cf7_csv_upload_error->add('fill_form_fields','You do not have permission to import file.');	
+}
+
+
 
 
 //Verify nonce values
@@ -171,6 +180,7 @@ if(isset($_POST['submit']) && isset($_FILES['importFormList']) && !empty($_FILES
 										$arr_insert_info['submit_time'] = date_format($sub_date,"Y-m-d H:i:s");
 									}
 								}
+								
 								//set default date and time in submit_time parameter
 								if($date_insert_flag){
 									$arr_insert_info['submit_time'] = date_i18n('Y-m-d H:i:s', time());
