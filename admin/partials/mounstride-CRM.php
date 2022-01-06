@@ -99,7 +99,7 @@ wp_enqueue_style('mounstride-CRM-css');
 				</div>
 				
 			</div>
-			<div class="btn-outer"><a href="https://www.mountstride.com/contact/" target="_blank" rel="nofollow" class="btn-typ1">Contact Us</a></div>
+			<div class="btn-outer"><a href="<?php print esc_url('https://www.mountstride.com/contact/');?>" target="_blank" rel="nofollow" class="btn-typ1">Contact Us</a></div>
 		</div>
 	</div>
 </div>

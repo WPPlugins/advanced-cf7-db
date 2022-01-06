@@ -3,7 +3,7 @@ Contributors: vsourz1td
 Tags: contact form 7 db, contact form db, advanced cf7 db, contact form 7 database, contact form db, contact form 7, save form data, save contact form, save cf7, database, cf7db, save-contact-form, Save-Forms-Data, import-cf7, export-contact-data, view-cf7-entry
 Requires at least: 4.0
 Tested up to: 5.8.2
-Stable tag: 1.8.3
+Stable tag: 1.8.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,7 +28,7 @@ Every form that is submitted in the website will be captured into database using
 * View list of all forms received through Contact Form 7
 * Search / filter form details using keyword
 * Search / filter enquiries using custom date-range filter
-* Export data in **CSV, Excel or PDF** format by applying filters
+* Export data in **CSV, Excel** format by applying filters
 * View attachment download link
 * Advanced pagination with an option to jump to any page to view specific entries
 * Enable/Disable columns with personalized tabular structure
@@ -191,6 +191,11 @@ return $contact_form_ids;
 
 
 == Changelog ==
+= 1.8.4 =
+* We have upgraded with Security patches
+* Remove Export to PDF support
+
+
 = 1.8.3 =
 * We have upgraded with Security patch.
 * Compatible with latest version wordpress 5.8.2

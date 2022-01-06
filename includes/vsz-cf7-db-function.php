@@ -25,7 +25,7 @@ function vsz_cf7_before_send_email($contact_form){
 	$arr_contact_form_ids = (array) apply_filters('vsz_cf7_unwanted_form_data_submission', $contact_form_ids);
 
 	if(!empty($arr_contact_form_ids) && is_array($arr_contact_form_ids) && in_array($cf7_id, $arr_contact_form_ids)) return;
-	
+
 	$contact_form = vsz_cf7_get_posted_data($contact_form);
 
 	//for database installion
@@ -56,7 +56,7 @@ function vsz_cf7_before_send_email($contact_form){
 		//Get not inserted fields value list
 		$cf7d_no_save_fields = vsz_cf7_no_save_fields();
 		foreach ($contact_form->posted_data as $k => $v) {
-			
+
 			//Check not inserted fields name in array or not
 			if(in_array($k, $cf7d_no_save_fields)) {
 				continue;
@@ -131,7 +131,7 @@ if (!function_exists('vsz_cf7_modify_form_before_insert_in_cf7_vdata_entry')) {
             //Get all uploaded files information
 			foreach ($cf7->uploaded_files as $k => $v) {
 
-                
+
 				//to check if CF7 version due to changes $cf7->uploaded_files return value
 				if(defined('WPCF7_VERSION') && WPCF7_VERSION > '5.3.2'){
 					$val=$v[0];
@@ -149,7 +149,7 @@ if (!function_exists('vsz_cf7_modify_form_before_insert_in_cf7_vdata_entry')) {
 					//Setup customize file information in array
 					$cf7->posted_data[$k] = $upload_dir['baseurl'] . '/' . $cf7d_upload_folder . '/' . $file_name;
 				}
-				
+
             }//Close foreach
         }//Close if
         return $cf7;
@@ -183,12 +183,12 @@ function vsz_cf7_get_the_form_list($fid = ''){
 			$form[] = $v;
 		}
     }
-	
+
 	if(count($form)>1){
 		// New function Added to sort the array by CF7 Name
 		usort($form, "cmp_sort_form_name");
 	}
-	
+
 	return $form;
 }//Close function
 /*
@@ -222,6 +222,7 @@ function vsz_cf7_sortdata($data){
 
 //Get form id related fields information from DB
 function vsz_cf7_get_db_fields($fid, $filter = true){
+
     global $wpdb;
 	$fid = (int)$fid;
     $sql = "SELECT `name` FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE cf7_id = ".$fid." GROUP BY `name`";
@@ -296,20 +297,21 @@ function vsz_cf7_current_action(){
 	$current_action = false;
 	if (isset($_POST['action']) && -1 != $_POST['action'] && isset($_POST['btn_apply'])) {
         $current_action = sanitize_text_field($_POST['action']);
-        return apply_filters('vsz_cf7_get_current_action', $current_action);
+        return (string) apply_filters('vsz_cf7_get_current_action', $current_action);
     }
 
     if (isset($_POST['action2']) && -1 != $_POST['action2'] && isset($_POST['btn_apply2'])) {
         $current_action = sanitize_text_field($_POST['action2']);
-        return apply_filters('vsz_cf7_get_current_action', $current_action);
+        return (string) apply_filters('vsz_cf7_get_current_action', $current_action);
     }
-    $current_action = apply_filters('vsz_cf7_get_current_action', $current_action);
+    $current_action = (string) apply_filters('vsz_cf7_get_current_action', $current_action);
     return false;
 }
 
 
 //Display field type related values here
 function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
+
 	$type = esc_html($type);
 	$k = esc_html($k);
 	if($type == 'checkbox'){
@@ -321,12 +323,17 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 			$label = esc_html($v);
 		}
 		$loading = __('Loading...');
-		echo "<li class=\"clearfix\">
-				<span class=\"label\">".$label." (".$type.")</span>
-				<textarea name=\"field[".$k."]\" rows=\"3\" cols=\"20\" class=\"field-".$k."\" >".$loading."</textarea>
-				<span class=\"margin_left\">(Multiple entry start from new line)</span>
-				<div class=\"clear\"></div>
-			</li>";
+		//added in 1.8.4
+		$fieldName = "field[".$k."]";
+		$className = "field-$k";
+		//Display Text box design here
+		?><li class="clearfix">
+			<span class="label"><?php print esc_html($label." (".$type.").");?></span>
+			<textarea name="<?php print esc_html($fieldName);?>" rows="3" cols="20" class="<?php print esc_html($className);?>" ><?php print esc_html($loading);?></textarea>
+			<span class="margin_left"><?php esc_html_e('(Multiple entry start from new line)',VSZ_CF7_TEXT_DOMAIN); ?></span>
+			<div class="clear"></div>
+		</li><?php
+
 	}
 	else if($type == 'radio'){
 
@@ -337,9 +344,16 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 			$label = esc_html($v);
 		}
 		$loading = __('Loading...');
-		echo "<li class=\"clearfix\">
-				<span class=\"label\">".$label." (".$type.")</span>
-				<textarea name=\"field[".$k."]\" rows=\"3\" cols=\"20\" class=\"field-".$k."\" >".$loading."</textarea><div class=\"clear\"></div></li>";
+		//added in 1.8.4
+		$fieldName = "field[".$k."]";
+		$className = "field-$k";
+		//Display Text box design here
+		?><li class="clearfix">
+			<span class="label"><?php print esc_html($label." (".$type.").");?></span>
+			<textarea name="<?php print esc_html($fieldName);?>" rows="3" cols="20" class="<?php print esc_html($className);?>" ><?php print esc_html($loading);?></textarea>
+			<div class="clear"></div>
+		</li><?php
+
 	}
 	else if($type == 'select'){
 		if(is_array($v)){
@@ -349,9 +363,15 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 			$label = esc_html($v);
 		}
 		$loading = __('Loading...');
-		echo "<li class=\"clearfix\">
-				<span class=\"label\">".$label." (".$type.")</span>
-				<textarea name=\"field[".$k."]\" rows=\"3\" cols=\"20\" class=\"field-".$k."\" >".$loading."</textarea><div class=\"clear\"></div></li>";
+		//added in 1.8.4
+		$fieldName = "field[".$k."]";
+		$className = "field-$k";
+		//Display Text box design here
+		?><li class="clearfix">
+			<span class="label"><?php print esc_html($label." (".$type.").");?></span>
+			<textarea name="<?php print esc_html($fieldName);?>" rows="3" cols="20" class="<?php print esc_html($className);?>" ><?php print esc_html($loading);?></textarea>
+			<div class="clear"></div>
+		</li><?php
 	}
 	else if($type == 'textarea'){
 		if(is_array($v)){
@@ -361,9 +381,16 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 			$label = esc_html($v);
 		}
 		$loading = __('Loading...');
-		echo "<li class=\"clearfix\">
-				<span class=\"label\">".$label."</span>
-				<textarea name=\"field[".$k."]\" rows=\"3\" cols=\"20\" class=\"field-".$k."\" >".$loading."</textarea><div class=\"clear\"></div></li>";
+		//added in 1.8.4
+		$fieldName = "field[".$k."]";
+		$className = "field-$k";
+		//Display Text box design here
+		?><li class="clearfix">
+			<span class="label"><?php print esc_html($label);?></span>
+			<textarea name="<?php print esc_html($fieldName);?>" rows="3" cols="20" class="<?php print esc_html($className);?>" ><?php print esc_html($loading);?></textarea>
+			<div class="clear"></div>
+		</li><?php
+
 	}
 	else if($type == 'file'){
 		if(is_array($v)){
@@ -374,10 +401,17 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		}
 		$loading = __('Loading...');
 		$disable = 'readonly';
-		echo "<li class=\"clearfix\">
-				<span class=\"label\">".$label."</span>
-				<input class=\"field-".$k."\" type=\"text\" name=\"field[".$k."]\" value=\"".$loading."\" ".$disable." /><div class=\"clear\"></div></li>";
-	}else if($type == 'tel'){
+		//added in 1.8.4
+		$fieldName = "field[".$k."]";
+		$className = "field-$k";
+		//Display Text box design here
+		?><li class="clearfix">
+			<span class="label"><?php print esc_html($label);?></span>
+			<input class="<?php print esc_html($className);?>" type="text" name="<?php print esc_html($fieldName);?>" value="<?php print esc_html($loading);?>"  <?php print esc_html($disable);?> />
+			<div class="clear"></div>
+		</li><?php
+	}
+	else if($type == 'tel'){
 
 		if(is_array($v)){
 			$label = esc_html($v['label']);
@@ -386,10 +420,18 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 			$label = esc_html($v);
 		}
 		$loading = __('Loading...');
-		echo "<li class=\"clearfix\">
-				<span class=\"label\">".$label."</span>
-				<input class=\"field-".$k."\" type=\"text\" name=\"field[".$k."]\" value=\"".$loading."\" /><div class=\"clear\"></div></li>";
-	}else if($type == 'dynamictext'|| $type == 'dynamichidden'|| $type == 'url' || $type == 'number' || $type == 'date' || $type == 'acceptance' || $type == 'quiz'){
+		//added in 1.8.4
+		$fieldName = "field[".$k."]";
+		$className = "field-$k";
+		//Display Text box design here
+		?><li class="clearfix">
+			<span class="label"><?php print esc_html($label);?></span>
+			<input class="<?php print esc_html($className);?>" type="text" name="<?php print esc_html($fieldName);?>" value="<?php print esc_html($loading);?>" />
+			<div class="clear"></div>
+		</li><?php
+
+	}
+	else if($type == 'dynamictext'|| $type == 'dynamichidden'|| $type == 'url' || $type == 'number' || $type == 'date' || $type == 'acceptance' || $type == 'quiz'){
 		if(is_array($v)){
 			$label = esc_html($v['label']);
 		}
@@ -397,10 +439,18 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 			$label = esc_html($v);
 		}
 		$loading = __('Loading...');
-		echo "<li class=\"clearfix\">
-				<span class=\"label\">".$label."</span>
-				<input class=\"field-".$k."\" type=\"text\" name=\"field[".$k."]\" value=\"".$loading."\" /><div class=\"clear\"></div></li>";
-	}else{
+		//added in 1.8.4
+		$fieldName = "field[".$k."]";
+		$className = "field-$k";
+		//Display Text box design here
+		?><li class="clearfix">
+			<span class="label"><?php print esc_html($label);?></span>
+			<input class="<?php print esc_html($className);?>" type="text" name="<?php print esc_html($fieldName);?>" value="<?php print esc_html($loading);?>" />
+			<div class="clear"></div>
+		</li><?php
+
+	}
+	else{
 		if(is_array($v)){
 			$label = esc_html($v['label']);
 		}
@@ -408,9 +458,16 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 			$label = esc_html($v);
 		}
 		$loading = __('Loading...');
-		echo "<li class=\"clearfix\">
-				<span class=\"label\">".$label."</span>
-				<textarea name=\"field[".$k."]\" rows=\"3\" cols=\"20\" class=\"field-".$k."\" >".$loading."</textarea><div class=\"clear\"></div></li>";
+		//added in 1.8.4
+		$fieldName = "field[".$k."]";
+		$className = "field-$k";
+		//Display Text box design here
+		?><li class="clearfix">
+			<span class="label"><?php print esc_html($label);?></span>
+			<textarea name="<?php print esc_html($fieldName);?>" rows="3" cols="20" class="<?php print esc_html($className);?>" ><?php print esc_html($loading);?></textarea>
+			<div class="clear"></div>
+		</li><?php
+
 	}
 
 }
@@ -427,7 +484,9 @@ function vsz_cf7_import_date_format_callback(){
 						'd/m/Y' => date('d/m/Y'),
 						'd-m-Y' => date('d-m-Y')
 					);
+
 	return $arr_dates;
+
 }
 
 //Get field name related type information
@@ -451,25 +510,4 @@ function vsz_field_type_info($fid){
 	}
 
 	return $arr_field_type;
-}
-
-/**
- * Get highlighted code
- *
- * @param $code
- * @return highlighted code
- */
-
-if(!function_exists("get_highlighted_code")){
-	function get_highlighted_code($code) {
-		// Including library
-		require_once(plugin_dir_path(__FILE__)."geshi.php");
-		
-		// Creating object
-		$geshi = new GeSHi($code,'PHP');
-		$geshi->enable_classes();
-		
-		// Getting parsed code
-		return $geshi->parse_code();
-	}
 }
