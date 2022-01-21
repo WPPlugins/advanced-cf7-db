@@ -921,7 +921,8 @@ class Advanced_Cf7_Db_Admin {
 
 									$file_path = $dir_upload."/".basename($file_url);
 									if(file_exists($file_path)){
-										$ret = unlink($file_path);
+										//$ret = unlink($file_path);
+										wp_delete_file( $file_path );
 									}
 								}
 							}
@@ -1363,8 +1364,15 @@ class Advanced_Cf7_Db_Admin {
 			$upload_dir = wp_upload_dir();
 			$dir_upload = $upload_dir['basedir'] .'/' .VSZ_CF7_UPLOAD_FOLDER;
 
-			unlink($dir_upload.'/'.$val);
-			echo esc_html("y");
+			$delete_path = path_join($dir_upload,$val);
+			if(file_exists($delete_path)){
+				wp_delete_file( $delete_path );
+
+				echo esc_html("y");
+			}else{
+				echo esc_html("n");
+			}
+
 			wp_die();
 		}
 		else{
