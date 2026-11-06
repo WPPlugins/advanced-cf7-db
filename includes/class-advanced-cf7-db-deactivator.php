@@ -20,6 +20,12 @@
  * @subpackage Advanced_Cf7_Db/includes
  * @author     vsourz Digital <mehul@vsourz.com>
  */
+ 
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 class Advanced_Cf7_Db_Deactivator {
 
 	/**

@@ -1,3 +1,11 @@
+<?php
+
+ // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+?>
 <style>
 
 .grid3 .col {

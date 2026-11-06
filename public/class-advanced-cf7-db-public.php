@@ -99,16 +99,19 @@ class Advanced_Cf7_Db_Public {
 		wp_register_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/advanced-cf7-db-public.js', array( 'jquery' ), $this->version, false );
 
 	}
-	
-	public function vsz_acf7_db_register_shortcode(){
-		
-		//Add short code for display ticket related information
-		add_shortcode( 'acf7db', array( $this, 'vsz_acf7_db_shortcode_display_front' ));
+
+	/**
+	 * Frontend display of entries is provided by the User Access add-on.
+	 * When the add-on is not active, render existing [acf7db] shortcodes as
+	 * empty output instead of showing the raw shortcode text on the page.
+	 *
+	 * @since    2.1.6
+	 */
+	public function vsz_cf7_hide_inactive_shortcode() {
+
+		if ( ! shortcode_exists( 'acf7db' ) ) {
+			add_shortcode( 'acf7db', '__return_empty_string' );
+		}
+
 	}
-	
-	//Display ticket related information 
-	public function vsz_acf7_db_shortcode_display_front($atts, $content, $name){
-		return require plugin_dir_path( __FILE__ ) . 'partials/vsz_acf7_db_shortcode_display_front.php';
-	}
-	
 }

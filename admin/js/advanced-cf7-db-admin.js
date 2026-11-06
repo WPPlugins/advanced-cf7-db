@@ -180,6 +180,7 @@ jQuery(document).ready(function($) {
 		var fid = parseInt(jQuery('#cf7_id').val());
 		//added in 1.8.3
 		var getEntryNonce = jQuery(this).data('nonce');
+		var getListNonce = jQuery('input[name="vsz_cf7_form_list_nonce"]').val();
 
 		var arr_field_type = jQuery.parseJSON(jQuery('form#cf7d-modal-form-edit-value input[name="arr_field_type"]').val());
 		var arr_option = ['radio','checkbox','select'];
@@ -219,15 +220,17 @@ jQuery(document).ready(function($) {
             url: ajaxurl + '?action=vsz_cf7_edit_form_value',
             type: 'POST',
             data: {
-            	 	'rid': rid,
-            	 	'fid': fid,
+					'rid': rid,
+					'fid': fid,
 					//added in 1.8.3
-            	 	'getEntryNonce': getEntryNonce
-        		  },
+					'getEntryNonce': getEntryNonce,
+					'getListNonce': getListNonce
+				},
         })
         .done(function(data) {
             //Decode json data here
 			var json = jQuery.parseJSON(data);
+			console.log(json);
             if(json.indexOf != undefined && json.indexOf('@@') != -1){
             	alert('You do not have the access to edit the data.');
             	document.getElementById('overlayLoader').style.display = "none";
@@ -317,7 +320,7 @@ jQuery(document).ready(function($) {
             console.log("error");
 		})
         .always(function() {
-            console.log("complete");
+            //console.log("complete");
 			document.getElementById('overlayLoader').style.display = "none";
         });
 
@@ -385,7 +388,7 @@ function add_remove_file(index,filename){
 					var rid = jQuery(this).closest('form').find("input[name='rid']").val();
 					var editNonce = jQuery("input[name='vsz_cf7_edit_nonce']").val();
 					var field = index;
-					
+
 					var fd = new FormData();
 					fd.append( "fid", fid);
 					fd.append( "rid", rid);
@@ -407,7 +410,7 @@ function add_remove_file(index,filename){
 						success: function(data) {
 							//add in 1.8.3
 							if(data.includes('@~@')){
-								
+
 								var arrRes = data.split('@~@');
 								if(arrRes[0] == 'error'){
 									document.getElementById('overlayLoader').style.display = "none";
@@ -455,17 +458,17 @@ function add_remove_file(index,filename){
 												document.getElementById('overlayLoader').style.display = "block";
 											},
 											success: function(data) {
-												
+
 												//add in 1.8.3
 												if(data.includes('@~@')){
-													
+
 													var arrRes = data.split('@~@');
 													if(arrRes[0] == 'error'){
 														document.getElementById('overlayLoader').style.display = "none";
 														alert(arrRes[1]);
 													}
 													else if(arrRes[0] == 'success'){
-														
+
 														//get uploaded file information here
 														dataArr = arrRes[1].split("~~@@~~&&~~");
 
@@ -483,14 +486,14 @@ function add_remove_file(index,filename){
 														// Calling function which will handle the removal and new upload of the files
 														add_remove_file(index,filename);
 														document.getElementById('overlayLoader').style.display = "none";
-														
+
 													}
 												}
 												else{
 													document.getElementById('overlayLoader').style.display = "none";
 													alert("Sorry file was not uploaded, please try again later.");
 												}
-												
+
 											},
 											error: function(data) {
 												console.log(data);
@@ -502,8 +505,8 @@ function add_remove_file(index,filename){
 									}
 								});
 							}
-								
-							
+
+
 						},
 						error: function(data) {
 							console.log(data);
@@ -538,7 +541,7 @@ function add_remove_file(index,filename){
 				//added in 1.8.3
 				var rid = jQuery(this).closest('form').find("input[name='rid']").val();
 				var editNonce = jQuery("input[name='vsz_cf7_edit_nonce']").val();
-				
+
 
 				fd.append( "image", jQuery(thisdata)[0].files[0]);
 				fd.append( "action", "acf7_db_edit_scr_file_upload");
@@ -559,17 +562,17 @@ function add_remove_file(index,filename){
 					},
 
 					success: function(data) {
-						
+
 						//add in 1.8.3
 						if(data.includes('@~@')){
-							
+
 							var arrRes = data.split('@~@');
 							if(arrRes[0] == 'error'){
 								document.getElementById('overlayLoader').style.display = "none";
 								alert(arrRes[1]);
 							}
 							else if(arrRes[0] == 'success'){
-								
+
 								//get uploaded file information here
 								dataArr = arrRes[1].split("~~@@~~&&~~");
 
@@ -587,7 +590,7 @@ function add_remove_file(index,filename){
 								// Calling function which will handle the removal and new upload of the files
 								add_remove_file(index,filename);
 								document.getElementById('overlayLoader').style.display = "none";
-								
+
 							}
 						}
 						else{

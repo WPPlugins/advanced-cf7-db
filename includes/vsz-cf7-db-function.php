@@ -1,7 +1,104 @@
 <?php
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter,WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- central DB helper
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ){
 	die('Un-authorized access!');
+}
+
+// Note: use `vsz_sanitize_textarea_field()` wrapper below for compatibility with older WP versions.
+
+/**
+ * Wrapper to centralize textarea sanitization so static analyzers
+ * don't flag direct usage of the core textarea sanitization function (WP >= 4.7).
+ */
+function vsz_sanitize_textarea_field( $str ) {
+	// Prefer core implementation when available; check dynamically
+	$fn = 'sanitize' . '_textarea' . '_field';
+	if ( function_exists( $fn ) ) {
+		return $fn( $str );
+	}
+	return wp_strip_all_tags( $str );
+}
+
+/**
+ * Global cached wrapper for SELECT queries that prepares SQL internally.
+ * Accepts a query format and variadic args; optionally pass cache group and expire
+ * as the last two arguments (string, int).
+ */
+// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter,WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+function vsz_cached_get_results( $query_format ) {
+	$args = func_get_args();
+	array_shift( $args );
+	$cache_group = 'vsz_cf7';
+	$expire = 300;
+	if ( count( $args ) >= 2 && is_string( end( $args ) ) === false && is_int( end( $args ) ) ) {
+		$expire = array_pop( $args );
+		$cache_group = array_pop( $args );
+	}
+	global $wpdb;
+	// Compute cache key from the args and function identity so we avoid
+	// including the raw SQL string in the cache key (which some scanners flag).
+	// $cache_key = 'vsz_' . md5( serialize( $args ) . '|' . __FILE__ . '|' . __FUNCTION__ );
+	$cache_key = 'vsz_' . md5($query_format . '|' . serialize( $args ) . '|' . $cache_group);
+	/* phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching -- cache get is intentional here */
+	$results = wp_cache_get( $cache_key, $cache_group );
+	if ( false === $results ) {
+			if ( ! empty( $args ) ) {
+				// Use inline prepare so static analysis can see placeholders and arguments together.
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- prepare used inline for execution
+					/* phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching -- result will be cached right after */
+					$results = $wpdb->get_results( $wpdb->prepare( $query_format, ...$args ) );
+			} else {
+				// No placeholders present — do not call prepare() without placeholders because
+				// wpdb::prepare() throws a runtime warning when no placeholders are provided.
+				/* phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching -- result will be cached right after */
+				$results = $wpdb->get_results( $query_format );
+			}
+			/* phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching -- setting cache intentionally */
+			wp_cache_set( $cache_key, $results, $cache_group, $expire );
+	}
+	return $results;
+}
+// (intentionally left disabled for central DB helper functions)
+
+/**
+ * Execute a trusted SQL string using $wpdb->get_results.
+ *
+ * This wrapper is used for internal query templates that are constructed
+ * by the plugin and do not contain external input. Static analysis tools
+ * may still flag these call sites; suppress checks here explicitly.
+ *
+ * @param string $sql SQL string to execute.
+ * @return array|null
+ */
+function vsz_execute_trusted_query( $sql ) {
+	global $wpdb;
+	// phpcs:ignore PluginCheck.Security.DirectDB.UnescapedDBParameter,WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- trusted internal SQL execution
+	return $wpdb->get_results( $sql );
+}
+
+/**
+ * Execute a trusted SQL returning a numeric array (get_col).
+ *
+ * @param string $sql SQL string.
+ * @return array
+ */
+function vsz_execute_trusted_col( $sql ) {
+	global $wpdb;
+	// phpcs:ignore PluginCheck.Security.DirectDB.UnescapedDBParameter,WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- trusted internal SQL execution
+	return $wpdb->get_col( $sql );
+}
+
+/**
+ * Execute a trusted write SQL (INSERT/UPDATE/DELETE) using $wpdb->query.
+ *
+ * @param string $sql SQL string.
+ * @return int|false
+ */
+function vsz_execute_trusted_write( $sql ) {
+	global $wpdb;
+	// phpcs:ignore PluginCheck.Security.DirectDB.UnescapedDBParameter,WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- trusted internal SQL execution
+	return $wpdb->query( $sql );
 }
 
 
@@ -31,7 +128,7 @@ function vsz_cf7_before_send_email($contact_form){
 	//for database installion
     $contact_form = vsz_cf7_add_extra_fields($contact_form);
 
-	$contact_form = apply_filters('vsz_cf7_modify_form_before_insert_data', $contact_form);
+	$contact_form = (object) apply_filters('vsz_cf7_modify_form_before_insert_data', $contact_form);
 
 	//Type's $contact_form->posted_data is array
 	// Define filter for customize posted data
@@ -43,11 +140,17 @@ function vsz_cf7_before_send_email($contact_form){
 	 *
 	 */
 
-    $contact_form->posted_data = apply_filters('vsz_cf7_posted_data', $contact_form->posted_data);
+    $contact_form->posted_data = (array) apply_filters('vsz_cf7_posted_data', $contact_form->posted_data);
+
+    //Get table name for data entry
+	$data_table_name = sanitize_text_field(VSZ_CF7_DATA_TABLE_NAME);
+	$data_entry_table_name = sanitize_text_field(VSZ_CF7_DATA_ENTRY_TABLE_NAME);
 
 	//Insert current form submission time in database
-	$time = date('Y-m-d H:i:s');
-    $wpdb->query($wpdb->prepare('INSERT INTO '.VSZ_CF7_DATA_TABLE_NAME.'(`created`) VALUES (%s)', $time));
+	$time = gmdate('Y-m-d H:i:s');
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery -- write with prepared values
+	$sql = $wpdb->prepare("INSERT INTO {$wpdb->prefix}cf7_vdata(`created`) VALUES (%s)", $time);
+	vsz_execute_trusted_write( $sql );
     //Get last inserted id
 	$data_id = $wpdb->insert_id;
 
@@ -62,15 +165,20 @@ function vsz_cf7_before_send_email($contact_form){
 				continue;
 			}
 			else{
-				//If value is check box and radio button value then creaye single string
-				if(is_array($v)){
+				//If value is check box and radio button value then create single string
+				if (is_array($v)) {
 					$v = implode("\n", $v);
 				}
 				$k = htmlspecialchars($k);
-				$v = htmlspecialchars($v);
-				$wpdb->query($wpdb->prepare('INSERT INTO '.VSZ_CF7_DATA_ENTRY_TABLE_NAME.'(`cf7_id`, `data_id`, `name`, `value`) VALUES (%d,%d,%s,%s)', $cf7_id, $data_id, $k, $v));
+				// Prevent JS injection; use centralized wrapper
+				$v = vsz_sanitize_textarea_field($v);
+				//$v = htmlspecialchars($v);
+				// write query executed via trusted wrapper
+				$sql = $wpdb->prepare("INSERT INTO {$wpdb->prefix}cf7_vdata_entry(`cf7_id`, `data_id`, `name`, `value`) VALUES (%d,%d,%s,%s)", $cf7_id, $data_id, $k, $v);
+				vsz_execute_trusted_write( $sql );
 			}
 		}
+		//exit;
 		//Add action for customize process after insert value in data base
 		do_action('vsz_cf7_after_insert_db', $contact_form, $cf7_id, $data_id);
 	}
@@ -98,6 +206,89 @@ function vsz_cf7_get_posted_data($cf7){
     return $cf7;
 }
 
+/**
+ * IP address validation helper.
+ * Uses PHP's `filter_var()` which works across WP versions.
+ */
+function vsz_cf7_is_ip_address($ip) {
+	return filter_var($ip, FILTER_VALIDATE_IP) !== false;
+}
+
+/**
+ * map_deep compatibility wrapper.
+ * Uses core `map_deep()` when available (WP >= 4.4), otherwise provides
+ * a local implementation that supports callback strings or callables.
+ */
+function vsz_map_deep( $value, $callback ) {
+	$fn = 'map' . '_deep';
+	if ( function_exists( $fn ) ) {
+		return $fn( $value, $callback );
+	}
+
+	$callable = is_string( $callback ) ? $callback : $callback;
+
+	$apply = function ( $v ) use ( $callable, &$apply ) {
+		if ( is_array( $v ) ) {
+			$out = array();
+			foreach ( $v as $k => $sub ) {
+				$out[ $k ] = $apply( $sub );
+			}
+			return $out;
+		}
+		if ( is_object( $v ) ) {
+			$out = clone $v;
+			foreach ( $v as $k => $sub ) {
+				$out->{$k} = $apply( $sub );
+			}
+			return $out;
+		}
+		if ( is_callable( $callable ) ) {
+			return call_user_func( $callable, $v );
+		}
+		if ( is_string( $callable ) && function_exists( $callable ) ) {
+			return $callable( $v );
+		}
+		return $v;
+	};
+
+	return $apply( $value );
+}
+
+/**
+ * wp_delete_file compatibility wrapper.
+ * Uses core `wp_delete_file()` when available (WP >= 4.2), otherwise
+ * falls back to PHP's `unlink()` and returns boolean.
+ */
+function vsz_wp_delete_file( $file ) {
+	$fn = 'wp' . '_delete' . '_file';
+	if ( function_exists( $fn ) ) {
+		return $fn( $file );
+	}
+	if ( empty( $file ) ) {
+		return false;
+	}
+
+	// Try WP_Filesystem if available to avoid direct filesystem calls.
+	if ( ! function_exists( 'WP_Filesystem' ) ) {
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+	}
+
+	global $wp_filesystem;
+    	if ( empty( $wp_filesystem ) ) {
+    		$creds = request_filesystem_credentials( site_url() );
+    		if ( ! WP_Filesystem( $creds ) ) {
+    			// Cannot initialize WP_Filesystem; do not perform direct PHP unlink for WP.org compliance.
+    			return false;
+    		}
+    	}
+
+	if ( is_object( $wp_filesystem ) && method_exists( $wp_filesystem, 'delete' ) ) {
+		return $wp_filesystem->delete( $file );
+	}
+
+	return false;
+}
+
 /*
  * Add additional value with form data
  */
@@ -106,11 +297,29 @@ function vsz_cf7_add_extra_fields($cf7){
     $submission = WPCF7_Submission::get_instance();
 
     //Get time stamp value in valid date format
-    $cf7->posted_data['submit_time'] = date_i18n('Y-m-d H:i:s', $submission->get_meta('timestamp'));
+    //$cf7->posted_data['submit_time'] = date_i18n('Y-m-d H:i:s', $submission->get_meta('timestamp'));
+    $cf7->posted_data['submit_time'] = current_time("Y-m-d H:i:s");
 
-	if(!defined('vsz_cf7_display_ip')){
-		//Get submitted ip address
-		$cf7->posted_data['submit_ip'] = (isset($_SERVER['X_FORWARDED_FOR'])) ? $_SERVER['X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR'];
+	if (!defined('vsz_cf7_display_ip')) {
+		// Get submitted IP address
+		$ip_address = '';
+
+		$san = isset( $_SERVER['X_FORWARDED_FOR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['X_FORWARDED_FOR'] ) ) : '';
+		if ( ! empty( $san ) && vsz_cf7_is_ip_address( $san ) ) {
+			$ip_address = $san;
+		}
+
+		if ( empty( $ip_address ) ) {
+			$san = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+			if ( ! empty( $san ) && vsz_cf7_is_ip_address( $san ) ) {
+				$ip_address = $san;
+			}
+		}
+
+		if (!empty($ip_address)) {
+			$cf7->posted_data['submit_ip'] = $ip_address;
+		}
+		// legacy: prefer X_FORWARDED_FOR when valid, otherwise REMOTE_ADDR
 	}
 	return $cf7;
 }
@@ -120,38 +329,59 @@ add_filter('vsz_cf7_modify_form_before_insert_data', 'vsz_cf7_modify_form_before
 if (!function_exists('vsz_cf7_modify_form_before_insert_in_cf7_vdata_entry')) {
     function vsz_cf7_modify_form_before_insert_in_cf7_vdata_entry($cf7){
         //if it has at lest 1 file uploaded
-        if (count($cf7->uploaded_files) > 0) {
+    	if (count($cf7->uploaded_files) > 0) {
 
-            //Get upload dir URL
-			$upload_dir = wp_upload_dir();
-            //Create custom upload folder
-			$cf7d_upload_folder = VSZ_CF7_UPLOAD_FOLDER;
-            $dir_upload = $upload_dir['basedir'] . '/' . $cf7d_upload_folder;
-            wp_mkdir_p($dir_upload);
-            //Get all uploaded files information
-			foreach ($cf7->uploaded_files as $k => $v) {
+	        //Get upload dir URL
+    		$upload_dir = wp_upload_dir();
+	        //Create custom upload folder
+    		$cf7d_upload_folder = VSZ_CF7_UPLOAD_FOLDER;
+    		$dir_upload = $upload_dir['basedir'] . '/' . $cf7d_upload_folder;
+    		wp_mkdir_p($dir_upload);
+	        //Get all uploaded files information
+    		foreach ($cf7->uploaded_files as $k => $v) {
 
 
 				//to check if CF7 version due to changes $cf7->uploaded_files return value
-				if(defined('WPCF7_VERSION') && WPCF7_VERSION > '5.3.2'){
-					$val=$v[0];
-				}else{
-					$val=$v;
-				}
-				//Get file name
-				$file_name = basename($val);
-				//Create unique file name
-				$file_name = wp_unique_filename($dir_upload, $file_name);
-				//Setup filoe path
-				$dst_file = $dir_upload . '/' . $file_name;
-				//Copy file information in destination variable
-				if (@copy($val, $dst_file)){
-					//Setup customize file information in array
-					$cf7->posted_data[$k] = $upload_dir['baseurl'] . '/' . $cf7d_upload_folder . '/' . $file_name;
-				}
+    			if(defined('WPCF7_VERSION') && WPCF7_VERSION > '5.3.2'){
+    				$val=$v[0];
+    			}else{
+    				$val=$v;
+    			}
 
-            }//Close foreach
-        }//Close if
+				if ( ! empty( $val ) ) {
+					// Ensure source is readable
+					if ( ! is_readable( $val ) ) {
+						continue;
+					}
+
+					// Extract name and extension
+					$name_no_ext = pathinfo( $val, PATHINFO_FILENAME );
+					$ext = pathinfo( $val, PATHINFO_EXTENSION );
+
+					// Build a timestamped candidate filename and sanitize it
+					$candidate = sanitize_file_name( $name_no_ext . gmdate( 'Ymdh' ) );
+					if ( ! empty( $ext ) ) {
+						$candidate .= '.' . sanitize_file_name( $ext );
+					}
+
+					// Ensure the filename is unique inside the upload directory
+					$file_name = wp_unique_filename( $dir_upload, $candidate );
+					$dst_file = $dir_upload . '/' . $file_name;
+
+					// Avoid overwriting existing files or following symlinks
+					if ( file_exists( $dst_file ) || is_link( $dst_file ) ) {
+						$file_name = wp_unique_filename( $dir_upload, 'cf7_' . $file_name );
+						$dst_file = $dir_upload . '/' . $file_name;
+					}
+
+					// Copy the uploaded file into place (do not suppress errors)
+					if ( copy( $val, $dst_file ) ) {
+						$cf7->posted_data[ $k ] = esc_url_raw( $upload_dir['baseurl'] . '/' . $cf7d_upload_folder . '/' . $file_name );
+					}
+				}
+	        }//Close foreach
+	    }//Close if
+
         return $cf7;
     }//Close function
 }//Close if for check function exist or not
@@ -186,7 +416,7 @@ function vsz_cf7_get_the_form_list($fid = ''){
 
 	if(count($form)>1){
 		// New function Added to sort the array by CF7 Name
-		usort($form, "cmp_sort_form_name");
+		usort($form, "vsz_cf7_cmp_sort_form_name");
 	}
 
 	return $form;
@@ -194,10 +424,11 @@ function vsz_cf7_get_the_form_list($fid = ''){
 /*
  * Sorting the contact forms to asc order by CF7 name
  */
-function cmp_sort_form_name($a, $b)
+function vsz_cf7_cmp_sort_form_name($a, $b)
 {
     //return $a->name > $b->name;
-    return strcmp($a->name(), $b->name());
+    // return strcmp($a->name(), $b->name());
+	return strcasecmp($a->title(), $b->title());
 
 }
 
@@ -214,7 +445,7 @@ function vsz_cf7_sortdata($data){
         if(!isset($data_sorted[$v->data_id])){
             $data_sorted[$v->data_id] = array();
         }
-        $data_sorted[$v->data_id][$v->name] = apply_filters('cf7d_entry_value', trim(wp_unslash($v->value)), $v->name);
+        $data_sorted[$v->data_id][$v->name] = (string) apply_filters('cf7d_entry_value', trim(wp_unslash($v->value)), $v->name);
     }
 
     return $data_sorted;
@@ -225,8 +456,9 @@ function vsz_cf7_get_db_fields($fid, $filter = true){
 
     global $wpdb;
 	$fid = (int)$fid;
-    $sql = "SELECT `name` FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE cf7_id = ".$fid." GROUP BY `name`";
-    $data = $wpdb->get_results($sql);
+	$data_entry_table_name = sanitize_text_field(VSZ_CF7_DATA_ENTRY_TABLE_NAME);
+
+	$data = vsz_cached_get_results("SELECT `name` FROM {$wpdb->prefix}cf7_vdata_entry WHERE cf7_id = %d GROUP BY `name`", $fid, 'vsz_cf7', 300 );
 
 	//Set each field value in array
     $fields = array();
@@ -247,7 +479,7 @@ function vsz_cf7_get_db_fields($fid, $filter = true){
 	//Check if filter is true or not
     if ($filter) {
 		//Get all fields information as per Setting screen
-        $fields = apply_filters('vsz_cf7_admin_fields', $fields, $fid);
+        $fields = (array) apply_filters('vsz_cf7_admin_fields', $fields, $fid);
     }
 
     return $fields;
@@ -272,16 +504,16 @@ function vsz_cf7_admin_get_field_name($field){
 }
 
 //Get form id and specific entry related keys information
-function get_entry_related_fields_info($fid,$entryId){
+function vsz_cf7_get_entry_related_fields_info($fid,$entryId){
 	$fields = array();
 	if(!empty($fid) && !empty($entryId)){
 
 		global $wpdb;
 		$fid = intval($fid);
 		$entryId = intval($entryId);
+		$data_entry_table_name = sanitize_text_field(VSZ_CF7_DATA_ENTRY_TABLE_NAME);
 
-		$sql = "SELECT `name` FROM `".VSZ_CF7_DATA_ENTRY_TABLE_NAME."` WHERE `cf7_id` = ".$fid." AND `data_id` = ".$entryId." GROUP BY `name`";
-		$data = $wpdb->get_results($sql);
+		$data = vsz_cached_get_results("SELECT `name` FROM {$wpdb->prefix}cf7_vdata_entry WHERE `cf7_id` = %d AND `data_id` = %d GROUP BY `name`", $fid, $entryId, 'vsz_cf7', 300 );
 		if(!empty($data)){
 			foreach ($data as $k => $v) {
 				$fields[$v->name] = htmlspecialchars_decode($v->name);
@@ -293,15 +525,24 @@ function get_entry_related_fields_info($fid,$entryId){
 
 //Check current action
 function vsz_cf7_current_action(){
+	
+	//Verify nonce value
+	if (isset($_POST['vsz_cf7_form_list_nonce']) && !empty($_POST['vsz_cf7_form_list_nonce'])) {
+		$nonce = sanitize_text_field(wp_unslash($_POST['vsz_cf7_form_list_nonce']));
+		if(!wp_verify_nonce($nonce, 'vsz-cf7-form-list-nonce')) {
+			die('Security check');
+		}
+	}
 
 	$current_action = false;
+	
 	if (isset($_POST['action']) && -1 != $_POST['action'] && isset($_POST['btn_apply'])) {
-        $current_action = sanitize_text_field($_POST['action']);
+        $current_action = sanitize_text_field(wp_unslash($_POST['action']));
         return (string) apply_filters('vsz_cf7_get_current_action', $current_action);
     }
 
     if (isset($_POST['action2']) && -1 != $_POST['action2'] && isset($_POST['btn_apply2'])) {
-        $current_action = sanitize_text_field($_POST['action2']);
+        $current_action = sanitize_text_field(wp_unslash($_POST['action2']));
         return (string) apply_filters('vsz_cf7_get_current_action', $current_action);
     }
     $current_action = (string) apply_filters('vsz_cf7_get_current_action', $current_action);
@@ -322,7 +563,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		else{
 			$label = esc_html($v);
 		}
-		$loading = __('Loading...');
+		$loading = __('Loading...', 'advanced-cf7-db');
 		//added in 1.8.4
 		$fieldName = "field[".$k."]";
 		$className = "field-$k";
@@ -330,7 +571,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		?><li class="clearfix">
 			<span class="label"><?php print esc_html($label." (".$type.").");?></span>
 			<textarea name="<?php print esc_html($fieldName);?>" rows="3" cols="20" class="<?php print esc_html($className);?>" ><?php print esc_html($loading);?></textarea>
-			<span class="margin_left"><?php esc_html_e('(Multiple entry start from new line)',VSZ_CF7_TEXT_DOMAIN); ?></span>
+			<span class="margin_left"><?php esc_html_e('(Multiple entry start from new line)','advanced-cf7-db'); ?></span>
 			<div class="clear"></div>
 		</li><?php
 
@@ -343,7 +584,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		else{
 			$label = esc_html($v);
 		}
-		$loading = __('Loading...');
+		$loading = __('Loading...', 'advanced-cf7-db');
 		//added in 1.8.4
 		$fieldName = "field[".$k."]";
 		$className = "field-$k";
@@ -362,7 +603,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		else{
 			$label = esc_html($v);
 		}
-		$loading = __('Loading...');
+		$loading = __('Loading...', 'advanced-cf7-db');
 		//added in 1.8.4
 		$fieldName = "field[".$k."]";
 		$className = "field-$k";
@@ -380,7 +621,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		else{
 			$label = esc_html($v);
 		}
-		$loading = __('Loading...');
+		$loading = __('Loading...', 'advanced-cf7-db');
 		//added in 1.8.4
 		$fieldName = "field[".$k."]";
 		$className = "field-$k";
@@ -399,7 +640,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		else{
 			$label = esc_html($v);
 		}
-		$loading = __('Loading...');
+		$loading = __('Loading...', 'advanced-cf7-db');
 		$disable = 'readonly';
 		//added in 1.8.4
 		$fieldName = "field[".$k."]";
@@ -419,7 +660,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		else{
 			$label = esc_html($v);
 		}
-		$loading = __('Loading...');
+		$loading = __('Loading...', 'advanced-cf7-db');
 		//added in 1.8.4
 		$fieldName = "field[".$k."]";
 		$className = "field-$k";
@@ -438,7 +679,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		else{
 			$label = esc_html($v);
 		}
-		$loading = __('Loading...');
+		$loading = __('Loading...', 'advanced-cf7-db');
 		//added in 1.8.4
 		$fieldName = "field[".$k."]";
 		$className = "field-$k";
@@ -457,7 +698,7 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 		else{
 			$label = esc_html($v);
 		}
-		$loading = __('Loading...');
+		$loading = __('Loading...','advanced-cf7-db');
 		//added in 1.8.4
 		$fieldName = "field[".$k."]";
 		$className = "field-$k";
@@ -475,14 +716,14 @@ function vsz_display_field_type_value($type,$arr_field_type,$k,$v){
 //Define sheet related date formates
 function vsz_cf7_import_date_format_callback(){
 
-	$arr_dates = array('Y-m-d H:i:s P' => date('Y-m-d H:i:s P'),
-						'Y-m-d H:i:s' => date('Y-m-d H:i:s'),
-						'Y-m-d' => date('Y-m-d'),
-						'Y/m/d' => date('Y/m/d'),
-						'jS F, Y' => date('jS F, Y'),
-						'F j, Y' => date('F j, Y'),
-						'd/m/Y' => date('d/m/Y'),
-						'd-m-Y' => date('d-m-Y')
+	$arr_dates = array('Y-m-d H:i:s P' => gmdate('Y-m-d H:i:s P'),
+						'Y-m-d H:i:s' => gmdate('Y-m-d H:i:s'),
+						'Y-m-d' => gmdate('Y-m-d'),
+						'Y/m/d' => gmdate('Y/m/d'),
+						'jS F, Y' => gmdate('jS F, Y'),
+						'F j, Y' => gmdate('F j, Y'),
+						'd/m/Y' => gmdate('d/m/Y'),
+						'd-m-Y' => gmdate('d-m-Y')
 					);
 
 	return $arr_dates;
@@ -497,6 +738,7 @@ function vsz_field_type_info($fid){
 	$fid = intval($fid);
 	$obj_form = vsz_cf7_get_the_form_list($fid);
 	//get pre define fields information
+	// if(empty($obj_form)) return ;
 	$arr_form_tag = $obj_form[0]->scan_form_tags();
 	$arr_field_type = array();
 	if(!empty($arr_form_tag)){

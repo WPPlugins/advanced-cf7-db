@@ -24,6 +24,12 @@
  * @subpackage Advanced_Cf7_Db/includes
  * @author     vsourz Digital <mehul@vsourz.com>
  */
+ 
+ // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+ 
 class Advanced_Cf7_Db_i18n {
 
 
@@ -33,12 +39,8 @@ class Advanced_Cf7_Db_i18n {
 	 * @since    1.0.0
 	 */
 	public function load_plugin_textdomain() {
-
-		load_plugin_textdomain(
-			'advanced-cf7-db',
-			false,
-			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
-		);
+		// WordPress 4.6+ loads translations automatically from the languages directory when hosted on WordPress.org.
+		// No action required for modern installations.
 
 	}
 

@@ -27,6 +27,12 @@
  * @subpackage Advanced_Cf7_Db/includes
  * @author     vsourz Digital <mehul@vsourz.com>
  */
+ 
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+ 
 class Advanced_Cf7_Db {
 
 	/**
@@ -69,7 +75,7 @@ class Advanced_Cf7_Db {
 	public function __construct() {
 
 		$this->plugin_name = 'advanced-cf7-db';
-		$this->version = '1.8.6';
+		$this->version = VSZ_ADVANCE_CF7_DB_VERSION;
 
 		$this->load_dependencies();
 		$this->set_locale();
@@ -119,6 +125,12 @@ class Advanced_Cf7_Db {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-advanced-cf7-db-admin.php';
 
+
+		/**
+		 * The class responsible for defining all actions that occur during plugin activation.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-advanced-cf7-db-activator.php';
+
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
@@ -159,7 +171,6 @@ class Advanced_Cf7_Db {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-
 		// Adding custom screen
 		$this->loader->add_action('admin_menu', $plugin_admin, 'vsz_cf7_plugin_menu',9);
 
@@ -210,6 +221,8 @@ class Advanced_Cf7_Db {
 
 		// Edit Popup file delete
 		$this->loader->add_action('wp_ajax_acf7_db_edit_scr_file_delete',$plugin_admin,'vsz_acf7_db_edit_scr_file_delete');
+
+		
 	}
 
 	/**
@@ -226,8 +239,8 @@ class Advanced_Cf7_Db {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
-		// Register shortcode
-		$this->loader->add_action( 'after_setup_theme',$plugin_public,'vsz_acf7_db_register_shortcode' );
+		// Hide raw [acf7db] shortcode text when the User Access add-on is not active
+		$this->loader->add_action( 'init', $plugin_public, 'vsz_cf7_hide_inactive_shortcode', 99 );
 
 	}
 

@@ -1,18 +1,20 @@
-=== Advanced Contact form 7 DB ===
+=== Vsourz Form Entries for Contact Form 7 ===
 Contributors: vsourz1td
-Tags: contact form 7 db, contact form db, advanced cf7 db, contact form 7 database, contact form db, contact form 7, save form data, save contact form, save cf7, database, cf7db, save-contact-form, Save-Forms-Data, import-cf7, export-contact-data, view-cf7-entry
-Requires at least: 4.0
-Tested up to: 5.9
-Stable tag: 1.8.6
+Tags: contact form 7 db, contact form db, advanced cf7 db, database, form entries
+Requires at least: 5.6
+Tested up to: 7.1
+Stable tag: 2.1.6
+Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Requires Plugins: contact-form-7
 
-Save all contact form 7 form submitted data to the database, View, Ordering, Change field labels and Import/Export data using CSV.
+Save Contact Form 7 submissions to the database and manage entries from the WordPress admin.
 
 == Description ==
 Easy plug & play plugin to store all enquiry details received through website Contact Form 7 forms. Simply install & activate plugin to store all your enquiries in wp-admin.
 
-Every form that is submitted in the website will be captured into database using “Advanced Contact Form 7” plugin. Follow below steps to view form details:
+Every form that is submitted in the website will be captured into database using “Vsourz Form Entries for Contact Form 7” plugin. Follow below steps to view form details:
 
 * Select form from drop-down
 * View all form data for that particular form
@@ -38,11 +40,10 @@ Every form that is submitted in the website will be captured into database using
 * Import form details using CSV
 * Filter to exclude data from creating record in CF7 database
 * Modify form data before creating record in CF7 database
-* Generate shortcode using different parameters to display specific data only. For more details, please refer plugin “Shortcode” screen
 
 == Commercial Features ==
 **1. Advanced CF7 DB - GDPR Compliant**
-Advanced CF7 DB – GDPR Compliant plugin assists website and web-shop owners to comply with European privacy regulations known as GDPR. Advanced CF7 DB – GDPR Compliant is an add-on of Advanced CF7 DB, it is based on GDPR rules to export or erase user’s personal data stored with advanced CF7 DB. 
+Advanced CF7 DB – GDPR Compliant plugin assists website and web-shop owners to comply with European privacy regulations known as GDPR. Advanced CF7 DB – GDPR Compliant is an add-on of Advanced CF7 DB, it is based on GDPR rules to export or erase user’s personal data stored with advanced CF7 DB.
 
 Download Advanced CF7 DB – GDPR Complaint plugin from <a target="_blank" href="https://codecanyon.net/item/advanced-cf7-db-gdpr-compliant/22386060">here</a>
 
@@ -61,7 +62,7 @@ We have introduced a new add-on “Schedule Report” focusing on day-to-day bus
 * Weekly Report
 * Monthly Report
 
-Reports will be automatically generated and will be available to you in your e-mail address as per scheduled routine. 
+Reports will be automatically generated and will be available to you in your e-mail address as per scheduled routine.
 
 Download Schedule Report plugin from <a target="_blank" href="https://codecanyon.net/item/schedule-report-for-advanced-cf7-db/21560647?s_rank=8">here</a>
 
@@ -74,32 +75,13 @@ Download Schedule Report plugin from <a target="_blank" href="https://codecanyon
 * Scheduled Report will also be added to wp-cron and will be triggered as per schedule
 
 **3. Advanced CF7 DB - User Access Manager**
-Need to provide access to other users? Your, search ends now, this plugin provides access to individual users or user groups and accordingly user(s) can view or edit their contact form DB data. 
+Need to provide access to other users? Your, search ends now, this plugin provides access to individual users or user groups and accordingly user(s) can view or edit their contact form DB data.
 
 Download Advanced CF7 DB – User Access Manager plugin from <a target="_blank" href="https://codecanyon.net/item/advanced-cf7-db-user-access-manager/22058788">here</a>
- 
+
 = Advanced CF7 DB - User Access Manager Plugin Features =
 * Provide access of CF7 DB to view & update data to individual users or user groups
 * Provide access to single user for creating single/multiple forms
-
-
-**mountstride CRM**
-Do you want to effectively manage your end to end customer engagement and want to automate your business workflow? 
-
-Looking for CRM that Collaborates, Saves Time & Makes Work Easier for You. 
-
-Try mountstride!
-
-mountstride is a simple, efficient & easy to use solution for managing, prioritising and organising your leads.
-
-We empower Salespeople by focusing on providing Simple tools to effectively capture, nurture and convert their leads. With less time spent on trying to stay organised your Sales Teams can focus on winning more deals.
-
-Free for up to 5 users, no fixed contracts, no credit card required. 
-
-Start collaborating as a team, as you always wanted to. - <a target="_blank" href="https://www.mountstride.com/contact/">Contact Us</a>.
-
-Download Integration of Contact form 7 to mountstride CRM plugin from <a target="_blank" href="https://wordpress.org/plugins/cf7-mountstride-crm-integration/">here</a>
-
 
 == Plugin Customization ==
 Restrict IP address storage – Various countries restrict websites to store end users IP address. We have a provision to Restrict IP address storage. Now, IP address can be neglected while storing form’s data into database.
@@ -118,7 +100,7 @@ For support, email us at: <wp.support@vsourz.com>
 == Installation ==
 
 = Install via WordPress Admin =
-1. Go to Admin > Plugins > Add New 
+1. Go to Admin > Plugins > Add New
 2. On the upper portion click the Upload link.
 3. Using the file upload field, upload the plugin zip file here and activate the plugin.
 
@@ -150,8 +132,8 @@ Please contact our support team at <wp.support@vsourz.com> in case you face any 
 = Can I restrict the plugin from storing IP address of the user to contact form DB? =
 Yes, you can restrict the plugin from storing user's IP address.
 
-= Can I display Contact Form DB data to user ? =
-Yes, you can use short codes for displaying contact form data to users. For more detail please visit “Shortcode” plugin's description page.
+= Why does the shortcode require the User Access Addon? =
+The shortcode used to display form submissions can expose personally identifiable or sensitive information collected via Contact Form 7. To prevent accidental public disclosure, frontend display is gated by the Advanced CF7 DB - User Access Manager add-on which provides granular user- and role-based access controls. Site owners who understand the risks may enable guest/public display for specific form,but enabling public/guest display is not recommended for sensitive data.
 
 = How to restrict the plugin from storing IP address of the user to contact form DB? =
 Restriction is simple, just place "do_shortcode( ‘[cf7-db-display-ip]’ );" in the theme folders functions.php file By placing the code, IP address of the user's will not been stored.
@@ -163,7 +145,7 @@ Please follow below steps:
 – You need to add different shortcode for each site with specific siteId. If you need to restrict for all the sites then just place the shortcode without the parameter.
 
 = How to restrict the plugin from storing form entry to Contact Form DB? =
-Please follow below steps for restricting the plugin to store data 
+Please follow below steps for restricting the plugin to store data
 – Goto -> wp-content/themes/{active theme folder}/functions.php
 – Open the functions.php file and place below code at the end of the file.
 add_filter(‘vsz_cf7_unwanted_form_data_submission’,’vsz_restrict_form_data_submission’);
@@ -177,7 +159,25 @@ add_filter(‘vsz_cf7_unwanted_form_data_submission’,’vsz_restrict_form_data
 function vsz_restrict_form_data_submission($contact_form_ids){
 $contact_form_ids[] = [‘{your-contact-form-id}’,'{your-contact-form-id}’];
 return $contact_form_ids;
-} 
+}
+
+
+== External services ==
+
+This plugin integrates with the following third-party services. We list what is sent, when, and links to each service's terms and privacy policies so site owners can review them.
+
+- Freemius (freemius.com)
+	- What it's used for: managing add-on availability, license/trial activation, upgrade/purchase prompts and optional analytics related to plugin usage and errors.
+	- What data is sent and when: when you explicitly connect your site or enter/activate a license, the plugin sends details such as your site's URL, WordPress version, plugin slug and version, admin email (for account linkage), and purchase/license identifiers. Freemius may also collect anonymized usage and error reports if that feature is enabled.
+	- Why: to validate licenses, enable add-ons, display purchase/upgrade information, and provide update/analytics services.
+	- Links: Terms: https://freemius.com/terms/  Privacy: https://freemius.com/privacy/
+
+- Envato/CodeCanyon (codecanyon.net / envato.com)
+	- What it's used for: external purchase pages linked from the plugin (for example add-on purchase links). The plugin does not submit purchase data directly to Envato; visiting purchase links redirects the user to the Envato/CodeCanyon marketplace where purchase and account data are handled by Envato.
+	- What data is sent and when: when you follow a purchase link you will be redirected to CodeCanyon/Envato and any data exchanged (purchase/payment/account) is handled by Envato according to their terms.
+	- Links: Terms: https://codecanyon.net/legal/market  Privacy: https://www.envato.com/privacy/
+
+If you do not wish to use these services, avoid connecting via the plugin's connect/activation UI and do not follow purchase links. The plugin will continue to function for storing, viewing, importing and exporting Contact Form 7 submissions without connecting to external services.
 
 
 == Screenshots ==
@@ -191,6 +191,98 @@ return $contact_form_ids;
 
 
 == Changelog ==
+
+= 2.1.6 =
+* Compatibility: Prefixed plugin functions, admin menu slugs (Developer Support, Add-ons, Import CSV), and script/style handles with `vsz_cf7` to avoid naming conflicts with other plugins.
+* Documentation: Corrected the Envato/CodeCanyon terms and privacy links in the "External Services" section.
+* Change: Removed the frontend entry display shortcode documentation from the free plugin. It is now available in the User Access Manager add-on.
+* Fix: Fixed an issue where the existing `[acf7db]` shortcode was displayed as raw text on the frontend when the User Access Manager add-on was inactive.
+
+= 2.1.5 =
+* Security: Guarded bundled Freemius SDK loading to reduce conflicts with other plugins.
+* Security: Prevented changing PHP default timezone inside WordPress (guarded XLSX writer).
+* Compatibility: Replaced hardcoded plugin paths/URLs with WordPress APIs (`plugin_dir_path()`, `plugin_dir_url()`, `plugins_url()`), avoiding ABSPATH/wp-content hardcodes.
+* Internationalization: Fixed text domains to use the literal plugin slug `advanced-cf7-db` and removed dynamic/variable text-domain usage.
+* Hardening: Added ABSPATH guards to vendor example/test files and ensured files that can execute directly are protected.
+* Documentation: Added an "External services" section documenting Freemius and Envato/CodeCanyon (what data is sent, why, and links to terms/privacy).
+* Maintenance: Updated README metadata and corrected `Tested up to` to use a major WordPress version format.
+* Fixes: Nonce, upload handler, and various escaping/i18n issues addressed across admin and public code.
+
+= 2.1.4 =
+* Renamed the plugin to "Vsourz Form Entries for Contact Form 7".
+* We have upgraded with Security patches.
+
+= 2.1.3 =
+* Security: Fixed a potential CSV/Excel formula injection vulnerability. Exported values that could be interpreted as spreadsheet formulas (including those beginning with `=`, `+`, `-`, `@`, leading tabs/newlines, or common functions such as `HYPERLINK()` and `WEBSERVICE()`) are now automatically escaped and exported as plain text, preventing formula execution and external service calls when opened in spreadsheet applications.
+
+= 2.1.2 =
+* Security: Added capability checks to restrict unauthorized access to frontend views.
+* Enhancement: Added integration with Advanced CF7 DB – User Access Manager plugin for improved user access control.
+* Improvement: Applied the same user access rules to frontend views, ensuring consistent capability enforcement across both the admin dashboard and frontend.
+
+= 2.1.1 =
+* Data Storage Update: Data is now saved in the WordPress uploads directory instead of the plugin's admin CSV directory, improving compatibility and organization.
+* Form List Enhancement: The Import CSV form selection and Advanced CF7 DB form selection now display an alphabetically sorted list of forms for easier navigation.
+* WPML Support: Added compatibility with WPML for multilingual functionality.
+
+= 2.1.0 =
+* Security Fix: Fixed Cross-Site Request Forgery (CSRF) vulnerability in form entry deletion (CVE-2026-0811)
+* Security Fix: Added proper authorization checks for form submissions export functionality (CVE-2026-0814)
+* Security Fix: Added nonce verification to all export operations (CSV and Excel)
+* Security Fix: Added capability checks to ensure only authorized users can export form data
+* Enhanced security across all admin operations
+* We have upgraded with Security patches.
+* Compatible with WordPress 6.9.4
+
+= 2.0.9 =
+* We have upgraded with Security patches.
+
+= 2.0.8 =
+* Minor Bug Fixing causing Website Crash.
+
+= 2.0.7 =
+* Updated Freemius SDK to latest version.
+
+= 2.0.6 =
+* We have upgraded with Security patches
+* Compatible with latest version wordpress 6.7.1
+
+= 2.0.5 =
+* Minor bug fixing
+
+= 2.0.4 =
+* We have upgraded with Security patches
+* Minor bug fixing when changing language 
+
+= 2.0.3 =
+* We have upgraded with Security patches
+* Minor bug fixing when changing language 
+
+= 2.0.2 =
+* Compatible with latest version wordpress 6.5.3
+* Compatible up to PHP 8.2
+* Fixed SHA-1 hash-based contact form identification
+
+= 2.0.1 =
+* Integrate Freemius.
+* Minor bug fixing.
+
+= 2.0.0 =
+* Compatible with latest version wordpress 6.2.2
+* Enhancement of Export excel functionality with composer
+
+= 1.9.3 =
+* Compatible with latest version wordpress 6.2
+* Minor bug fixing.
+
+= 1.9 =
+* We have upgraded with Security patches
+
+= 1.8.8 =
+* We have upgraded with Security patches
+
+= 1.8.7 =
+* We have upgraded with Security patches
 
 = 1.8.6 =
 * We have upgraded with Security patches
@@ -283,13 +375,18 @@ return $contact_form_ids;
 = 1.1.2 =
 * Fix error related to PHP 7.1.
 
-= 1.1.1 = 
+= 1.1.1 =
 * Made changes to resolve the issue of user feasibility when editing the form fields.
 * Minor tweak related to export functionality and attachment download functionality.
 
-= 1.1.0 = 
+= 1.1.0 =
 * Update Import Functionality.
 * Fix CF7 Version related issue.
 
 = 1.0.0 =
 * Initial
+
+== Upgrade Notice ==
+
+= 2.1.6 =
+Important: If you already use the `[acf7db]` shortcode to display submissions on the front end, the Advanced CF7 DB – User Access Manager add-on is required to continue using it.

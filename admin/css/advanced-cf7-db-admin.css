@@ -56,7 +56,10 @@
 #cf7d-modal-form {
   padding-bottom: 65px;
 }
-
+/* 
+ * Pagination 
+ */
+.vsz-cf7-listing .pagination-links #current_page{ padding: 0 2px 0 10px; }
 /*
  * Mobile skin
  */
@@ -487,6 +490,7 @@ h2.advanced span{
 .form-table.field-setting thead tr.form-field.form-required th{
 	color:#fff;
 	font-size:16px;
+	width: 33.33%;
 }
 .tabs.import-csv .tab-content{
 	margin-top:30px;
